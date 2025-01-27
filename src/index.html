@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Canvas Fitting All Space</title>
+	<meta charset="UTF-8">
+	<style>
+		body, html {
+			margin: 0;
+			padding: 0;
+			height: 100%;
+			width: 100%;
+			overflow: hidden;
+		}
+		canvas {
+			display: block;
+			background-color: #f0f0f0;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="myCanvas"></canvas>
+	<script src="box2d.min.js"></script>
+  <script>
+    // Some globals that I should refactor
+    var canvas = document.getElementById('myCanvas');
+    var b2 = Box2D;
+    var world;
+    var UNITS=30;
+
+  </script>
+  <script src="entity_manager.js"></script>
+  <script src="controller.js"></script>
+	<script src="player.js"></script>
+	<script src="platform.js"></script>
+	<script src="game.js"></script>
+</body>
+</html>
