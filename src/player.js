@@ -1,5 +1,5 @@
 class Player {
-  static MAX_VELOCITY = 5;
+  static MAX_VELOCITY = 10;
   constructor(x, y, w, h) {
     // Create player body definition
     const bodyDef = new b2.b2BodyDef();

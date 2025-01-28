@@ -20,7 +20,7 @@ function initGame() {
 }
 
 class CollisionDebug extends b2.JSContactFilter {
-  ShouldCollide = function(id_a, id_b) {
+  ShouldCollide = function (id_a, id_b) {
     let a = entity_manager.Get(id_a);
     let b = entity_manager.Get(id_b);
     console.log(a);
@@ -37,7 +37,7 @@ document.addEventListener('mousedown', function (event) {
   if (event.button != 0) return;
   isDrawingPlatform = true;
   startDrawX = event.clientX;
-    startDrawY = event.clientY;
+  startDrawY = event.clientY;
 });
 
 document.addEventListener('mousemove', function (event) {
@@ -91,7 +91,7 @@ function updateGame() {
     player.moveRight();
   }
 
-  
+
   // Update game logic here, e.g., step the physics world
   world.Step(1 / 60, 8, 3);
 
@@ -115,19 +115,21 @@ function updateGame() {
 function drawDebug(ctx) {
   ctx.fillStyle = 'black';
   ctx.font = '16px Arial';
-  ctx.fillText(`Velocity: (${player.body.GetLinearVelocity().get_x().toFixed(2)}, ${player.body.GetLinearVelocity().get_y().toFixed(2)})`, 10, 30); const velocityHistory = player.velocityHistory;
+  ctx.fillText(`Velocity: (${player.body.GetLinearVelocity().get_x().toFixed(2)}, ${player.body.GetLinearVelocity().get_y().toFixed(2)})`, 10, 30);
   ctx.fillText(`Entities: ${entity_manager.size()}`, 10, 50);
-
-  const graphHeight = 100;
-  ctx.beginPath();
-  ctx.moveTo(10, window.innerHeight - 10);
-  for (let i = 0; i < velocityHistory.length; i++) {
-    const x = 10 + i * 2;
-    const y = window.innerHeight - 200 - (velocityHistory[i] / 10) * graphHeight;
-    ctx.lineTo(x, y);
+  const velocityHistory = player.velocityHistory;
+  if (velocityHistory.length > 0) {
+    const graphHeight = 100;
+    ctx.beginPath();
+    ctx.moveTo(10, window.innerHeight - 200 - (velocityHistory[0] / 10) * graphHeight);
+    for (let i = 0; i < velocityHistory.length; i++) {
+      const x = 10 + i * 2;
+      const y = window.innerHeight - 200 - (velocityHistory[i] / 10) * graphHeight;
+      ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = 'red';
+    ctx.stroke();
   }
-  ctx.strokeStyle = 'red';
-  ctx.stroke();
 }
 
 function animate() {
