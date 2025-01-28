@@ -132,6 +132,24 @@ function drawDebug(ctx) {
   }
 }
 
+function savePlatforms() {
+  return pls.map(pl => pl.serialize()).join(";");
+}
+
+function loadPlatforms(str) {
+  // Destroy all platforms in pl
+  for (let i = pls.length-1; i >=0; i--) {
+    pls[i].destroy();
+  }
+
+  // Deserialize the ones created by savePlatforms
+  let platformStrings = str.split(";");
+  for (let i = 0; i < platformStrings.length; i++) {
+    Platform.deserialize(platformStrings[i]);
+  }
+
+}
+
 function animate() {
   updateGame();
   requestAnimationFrame(animate);

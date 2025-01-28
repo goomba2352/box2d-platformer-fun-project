@@ -20,6 +20,10 @@ class Platform {
     this.id = this.body.GetFixtureList().a;
     entity_manager.Add(this);
     pls.push(this);
+    this.x=x;
+    this.y=y;
+    this.w=w;
+    this.h=h;
   }
 
   draw(ctx) {
@@ -75,6 +79,15 @@ class Platform {
 
     return inside;
 
+  }
+
+  serialize() {
+    return btoa(JSON.stringify({ x: this.x, y: this.y, w: this.w, h: this.h }));
+  }
+
+  static deserialize(serializedString) {
+    const data = JSON.parse(atob(serializedString));
+    return new Platform(data.x, data.y, data.w, data.h);
   }
 
   destroy() {
