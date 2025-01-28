@@ -1,6 +1,5 @@
 class Platform {
-  constructor(x, y, w, h) {
-    // Create body definition for platform
+  constructor(x, y, w, h, fillColor = "#080") {
     const bodyDef = new b2.b2BodyDef();
     bodyDef.type = b2.b2_staticBody;
 
@@ -24,6 +23,7 @@ class Platform {
     this.y=y;
     this.w=w;
     this.h=h;
+    this.fillColor = fillColor;
   }
 
   draw(ctx) {
@@ -49,7 +49,7 @@ class Platform {
 
     // Draw the outline
     ctx.strokeStyle = '#111';
-    ctx.fillStyle = "#080";
+    ctx.fillStyle = this.fillColor;
     ctx.fill();
     ctx.lineWidth = 1;
     ctx.stroke();
@@ -82,12 +82,12 @@ class Platform {
   }
 
   serialize() {
-    return btoa(JSON.stringify({ x: this.x, y: this.y, w: this.w, h: this.h }));
+    return btoa(JSON.stringify({ x: this.x, y: this.y, w: this.w, h: this.h, fillColor: this.fillColor }));
   }
 
   static deserialize(serializedString) {
     const data = JSON.parse(atob(serializedString));
-    return new Platform(data.x, data.y, data.w, data.h);
+    return new Platform(data.x, data.y, data.w, data.h, data.fillColor);
   }
 
   destroy() {

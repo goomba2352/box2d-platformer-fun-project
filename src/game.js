@@ -1,11 +1,12 @@
 var player;
 var pls = [];
+var ptime=performance.now();
+var global_speed=2
 
 function initGame() {
   // Initialize your game here, e.g., create a new Box2D world
-  world = new b2.b2World(new b2.b2Vec2(0, 10)); // Gravity is 10 m/s² downwards
+  world = new b2.b2World(new b2.b2Vec2(0, 20)); // Gravity is 10 m/s² downwards
 
-  var controller = this.controller; // Capture the controller variable
   document.addEventListener('keydown', function (event) {
     controller._key_down(event);
   });
@@ -23,8 +24,6 @@ class CollisionDebug extends b2.JSContactFilter {
   ShouldCollide = function (id_a, id_b) {
     let a = entity_manager.Get(id_a);
     let b = entity_manager.Get(id_b);
-    console.log(a);
-    console.log(b);
     return true;
   }
 }
@@ -69,7 +68,7 @@ document.addEventListener('contextmenu', function (event) {
   let mouseX = event.clientX;
   let mouseY = event.clientY;
 
-  for (let i = pls.length-1; i >=0; i--) {
+  for (let i = pls.length - 1; i >= 0; i--) {
     let platform = pls[i];
     if (platform.containsMouse(mouseX, mouseY)) {
       platform.destroy();
@@ -83,24 +82,39 @@ document.addEventListener('wheel', function (event) {
   let mouseX = event.clientX;
   let mouseY = event.clientY;
 
-  for (let i = pls.length-1; i >=0; i--) {
+  for (let i = pls.length - 1; i >= 0; i--) {
     let platform = pls[i];
     if (platform.containsMouse(mouseX, mouseY)) {
       if (event.deltaY < 0) { // scroll up
         if (i > 0) {
           // swap with the previous platform
-          let temp = pls[i-1];
-          pls[i-1] = platform;
+          let temp = pls[i - 1];
+          pls[i - 1] = platform;
           pls[i] = temp;
         }
       } else if (event.deltaY > 0) { // scroll down
         if (i < pls.length - 1) {
           // swap with the next platform
-          let temp = pls[i+1];
-          pls[i+1] = platform;
+          let temp = pls[i + 1];
+          pls[i + 1] = platform;
           pls[i] = temp;
         }
       }
+      break;
+    }
+  }
+});
+
+document.addEventListener('auxclick', function (event) { // middle click
+  event.preventDefault();
+  let mouseX = event.clientX;
+  let mouseY = event.clientY;
+
+  for (let i = pls.length - 1; i >= 0; i--) {
+    let platform = pls[i];
+    if (platform.containsMouse(mouseX, mouseY)) {
+      let randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
+      platform.fillColor = randomColor; // set a new fill color for the platform
       break;
     }
   }
@@ -120,7 +134,10 @@ function updateGame() {
 
 
   // Update game logic here, e.g., step the physics world
-  world.Step(1 / 60, 8, 3);
+  let now = performance.now();
+  let dt = global_speed*(now-ptime)/1000;
+  world.Step(dt, 8, 3);
+  ptime=now
 
   // Clear canvas and redraw all objects
   const context = document.getElementById('myCanvas').getContext('2d');
@@ -134,9 +151,9 @@ function updateGame() {
   // Debuging info
   drawDebug(context);
 
-  player._update();
-  entity_manager._update();
-  controller._update();
+  player._update(dt);
+  entity_manager._update(dt);
+  controller._update(dt);
 }
 
 function drawDebug(ctx) {
@@ -144,6 +161,7 @@ function drawDebug(ctx) {
   ctx.font = '16px Arial';
   ctx.fillText(`Velocity: (${player.body.GetLinearVelocity().get_x().toFixed(2)}, ${player.body.GetLinearVelocity().get_y().toFixed(2)})`, 10, 30);
   ctx.fillText(`Entities: ${entity_manager.size()}`, 10, 50);
+  ctx.fillText(`MovementState: ${player.movementState.constructor.name}`, 10, 70);
   const velocityHistory = player.velocityHistory;
   if (velocityHistory.length > 0) {
     const graphHeight = 100;
@@ -165,7 +183,7 @@ function savePlatforms() {
 
 function loadPlatforms(str) {
   // Destroy all platforms in pl
-  for (let i = pls.length-1; i >=0; i--) {
+  for (let i = pls.length - 1; i >= 0; i--) {
     pls[i].destroy();
   }
 
