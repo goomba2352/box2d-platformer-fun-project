@@ -69,7 +69,7 @@ document.addEventListener('contextmenu', function (event) {
   let mouseX = event.clientX;
   let mouseY = event.clientY;
 
-  for (let i = 0; i < pls.length; i++) {
+  for (let i = pls.length-1; i >=0; i--) {
     let platform = pls[i];
     if (platform.containsMouse(mouseX, mouseY)) {
       platform.destroy();
@@ -78,6 +78,33 @@ document.addEventListener('contextmenu', function (event) {
   }
 });
 
+document.addEventListener('wheel', function (event) {
+  event.preventDefault();
+  let mouseX = event.clientX;
+  let mouseY = event.clientY;
+
+  for (let i = pls.length-1; i >=0; i--) {
+    let platform = pls[i];
+    if (platform.containsMouse(mouseX, mouseY)) {
+      if (event.deltaY < 0) { // scroll up
+        if (i > 0) {
+          // swap with the previous platform
+          let temp = pls[i-1];
+          pls[i-1] = platform;
+          pls[i] = temp;
+        }
+      } else if (event.deltaY > 0) { // scroll down
+        if (i < pls.length - 1) {
+          // swap with the next platform
+          let temp = pls[i+1];
+          pls[i+1] = platform;
+          pls[i] = temp;
+        }
+      }
+      break;
+    }
+  }
+});
 
 
 function updateGame() {
