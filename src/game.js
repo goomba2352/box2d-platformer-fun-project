@@ -16,16 +16,69 @@ function initGame() {
   world.SetContactFilter(callback);
 
   player = new Player(640, 500, 30, 30);
-  pls.push(new Platform(400, 800, 800, 30));
+  new Platform(400, 800, 800, 30);
 }
 
 class CollisionDebug extends b2.JSContactFilter {
   ShouldCollide = function(id_a, id_b) {
     let a = entity_manager.Get(id_a);
     let b = entity_manager.Get(id_b);
+    console.log(a);
+    console.log(b);
     return true;
   }
 }
+
+let isDrawingPlatform = false;
+let startDrawX, startDrawY;
+let new_pl = null;
+
+document.addEventListener('mousedown', function (event) {
+  if (event.button != 0) return;
+  isDrawingPlatform = true;
+  startDrawX = event.clientX;
+    startDrawY = event.clientY;
+});
+
+document.addEventListener('mousemove', function (event) {
+  if (!isDrawingPlatform) return;
+  let endDrawX = event.clientX;
+  let endDrawY = event.clientY;
+
+  // Remove the previous platform
+  if (new_pl != null) {
+    new_pl.destroy();
+    entity_manager._cleanup_now();
+  }
+
+  // Create a new platform
+  let width = Math.abs(endDrawX - startDrawX);
+  let height = Math.abs(endDrawY - startDrawY);
+  let x = Math.min(startDrawX, endDrawX) + width / 2;
+  let y = Math.min(startDrawY, endDrawY) + height / 2;
+  new_pl = new Platform(x, y, width, height);
+});
+
+document.addEventListener('mouseup', function (event) {
+  isDrawingPlatform = false;
+  new_pl = null;
+});
+
+document.addEventListener('contextmenu', function (event) {
+  event.preventDefault();
+  let mouseX = event.clientX;
+  let mouseY = event.clientY;
+
+  for (let i = 0; i < pls.length; i++) {
+    let platform = pls[i];
+    if (platform.containsMouse(mouseX, mouseY)) {
+      platform.destroy();
+      break;
+    }
+  }
+});
+
+
 
 function updateGame() {
   if (controller.jump()) {
@@ -55,13 +108,16 @@ function updateGame() {
   drawDebug(context);
 
   player._update();
+  entity_manager._update();
   controller._update();
 }
 
 function drawDebug(ctx) {
   ctx.fillStyle = 'black';
   ctx.font = '16px Arial';
-  ctx.fillText(`Velocity: (${player.body.GetLinearVelocity().get_x().toFixed(2)}, ${player.body.GetLinearVelocity().get_y().toFixed(2)})`, 10, 30);  const velocityHistory = player.velocityHistory;
+  ctx.fillText(`Velocity: (${player.body.GetLinearVelocity().get_x().toFixed(2)}, ${player.body.GetLinearVelocity().get_y().toFixed(2)})`, 10, 30); const velocityHistory = player.velocityHistory;
+  ctx.fillText(`Entities: ${entity_manager.size()}`, 10, 50);
+
   const graphHeight = 100;
   ctx.beginPath();
   ctx.moveTo(10, window.innerHeight - 10);
