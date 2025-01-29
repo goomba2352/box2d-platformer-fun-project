@@ -1,27 +1,42 @@
-class SensorInfo {
+class Collidable {
+  side;
+  parent;
+  id;
+}
+
+class SensorInfo extends Collidable {
   side;
   parent;
   id;
 
   constructor(side, parent, id) {
+    super();
     this.side = side;
     this.parent = parent;
     this.id = id;
   }
+  _Collision(type, side, other) {
+    this.parent._Collision(type, side, other)
+  }
 }
-class SensorBox extends SensorInfo {
+
+class SensorBox extends Collidable {
   static LEFT = 1;
   static RIGHT = 2;
   static TOP = 4;
   static BOTTOM = 8;
   static SELF = 16;
+  static ENTER = 1;
+  static LEAVE = 2;
 
   constructor(x, y, w, h) {
-    super(SensorBox.SELF, null, null);
+    super();
+    this.side = SensorBox.SELF;
     this.parent = this;
+    pls.push(this);
     // Create player body definition
     const bodyDef = new b2.b2BodyDef();
-    bodyDef.set_type(b2.b2_dynamicBody);
+    bodyDef.set_type(b2.b2_staticBody);
     bodyDef.set_allowSleep(false);
     this.body = world.CreateBody(bodyDef);
 
@@ -39,13 +54,12 @@ class SensorBox extends SensorInfo {
 
     // Create sensor shapes for each direction
     const sensorSize = 10; // Percentage of width/height to extend
-    this.left = this._CreateSensor(SensorBox.LEFT, -w / (2 * UNITS) - 3 / UNITS, 0, 1 / UNITS, h / (2 * UNITS) - 0.03);
-    this.right = this._CreateSensor(SensorBox.RIGHT, w / (2 * UNITS) + 3 / UNITS, 0, 1 / UNITS, h / (2 * UNITS) - 0.03);
-    this.top = this._CreateSensor(SensorBox.TOP, 0, -h / (2 * UNITS) - 3 / UNITS, w / (2 * UNITS) - 0.03, 1 / UNITS);
-    this.bottom = this._CreateSensor(SensorBox.BOTTOM, 0, h / (2 * UNITS) + 3 / UNITS, w / (2 * UNITS) - 0.03, 1 / UNITS);
+    this.left = this._CreateSensor(SensorBox.LEFT, -w / (2 * UNITS) - 8 / UNITS, 0, 6 / UNITS, h / (2 * UNITS) - 0.03);
+    this.right = this._CreateSensor(SensorBox.RIGHT, w / (2 * UNITS) + 8 / UNITS, 0, 6 / UNITS, h / (2 * UNITS) - 0.03);
+    this.top = this._CreateSensor(SensorBox.TOP, 0, -h / (2 * UNITS) - 8 / UNITS, w / (2 * UNITS) - 0.03, 6 / UNITS);
+    this.bottom = this._CreateSensor(SensorBox.BOTTOM, 0, h / (2 * UNITS) + 8 / UNITS, w / (2 * UNITS) - 0.03, 6 / UNITS);
 
     entity_manager.Add(this);
-    this.movementState = new FallingState();
     this.sensor_map = new Map();
     this.sensor_map.set(1, new Set());
     this.sensor_map.set(2, new Set());
@@ -57,6 +71,7 @@ class SensorBox extends SensorInfo {
     this.w=w;
     this.h=h;
     this.fillColor="#333";
+    this.collisions_to_handle = [];
   }
 
   _CreateSensor(side, x, y, w, h) {
@@ -74,13 +89,16 @@ class SensorBox extends SensorInfo {
     return sideShape;
   }
 
-  _CollisionEnter(side, other) {
-    this.sensor_map.get(side).add(other);
+  _Collision(type, side, other) {
+    if (type == SensorBox.ENTER) {
+      this.sensor_map.get(side).add(other);
+    } else {
+      this.sensor_map.get(side).delete(other);
+    }
+    if (side==SensorBox.SELF) { this.collisions_to_handle.push([type, other]) }
   }
 
-  _CollisionLeave(side, other) {
-    this.sensor_map.get(side).delete(other);
-  }
+  HandleCollision(type, other) { }
 
   draw(ctx) {
     this.draw_rect_shape(this.center, ctx, this.fillColor);
@@ -88,6 +106,13 @@ class SensorBox extends SensorInfo {
     // this.draw_rect_shape(this.right, ctx, '#990');
     // this.draw_rect_shape(this.top, ctx, '#990');
     // this.draw_rect_shape(this.bottom, ctx, '#990');
+  }
+
+  _update(dt) {
+    for (let i = this.collisions_to_handle.length - 1; i >= 0; i--) {
+      let event = this.collisions_to_handle.pop();
+      this.HandleCollision(event[0], event[1]);
+    }
   }
 
   draw_rect_shape(shape, ctx, color) {
@@ -120,7 +145,9 @@ class SensorBox extends SensorInfo {
     ctx.stroke();
   }
 
-  destory() {
+  destroy() {
+    let index = pls.indexOf(this);
+    pls.splice(index, 1);
     world.DestroyBody(this.body);
     for (let id of this.child_ids) {
       if (!entity_manager.RemoveById(id)) {}

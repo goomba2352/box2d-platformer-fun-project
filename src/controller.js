@@ -35,6 +35,10 @@ class Controller {
     return this._keys_held.has(Controller.SPACE);
   }
 
+  jumpPressed() {
+    return this._keys_down.has(Controller.SPACE);
+  }
+
   _update() {
     this._keys_down = new Set();
     this._keys_released = new Set();

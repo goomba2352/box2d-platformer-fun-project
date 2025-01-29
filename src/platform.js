@@ -3,7 +3,6 @@ class Platform extends SensorBox {
   constructor(x, y, w, h) {
     super(x, y, w, h);
     this.body.SetType(b2.b2_staticBody);
-    pls.push(this);
   }
 
   containsMouse(mx, my) {
@@ -41,11 +40,5 @@ class Platform extends SensorBox {
     let p = new Platform(data.x, data.y, data.w, data.h);
     p.fillColor = data.fillColor;
     return p;
-  }
-
-  destroy() {
-    let index = pls.indexOf(this);
-    pls.splice(index,1);
-    super.destory();
   }
 }
