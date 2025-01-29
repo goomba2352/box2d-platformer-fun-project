@@ -8,12 +8,18 @@ class EntityManager {
     return this.es.set(e.id,e);
   }
 
+  AddById(e, id) {
+    return this.es.set(id, e);
+  }
+
   Remove(e) {
     this.to_remove.push(e.id);
+    return this.es.has(e.id);
   }
 
   RemoveById(id) {
     this.to_remove.push(id);
+    return this.es.has(id);
   }
 
   size() {

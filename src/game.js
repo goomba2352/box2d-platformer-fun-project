@@ -1,7 +1,7 @@
 var player;
 var pls = [];
 var ptime=performance.now();
-var global_speed=2
+var global_speed=2;
 
 function initGame() {
   // Initialize your game here, e.g., create a new Box2D world
@@ -13,19 +13,40 @@ function initGame() {
   document.addEventListener('keyup', function (event) {
     controller._key_up(event);
   });
-  let callback = new CollisionDebug();
-  world.SetContactFilter(callback);
+  world.SetContactListener(new ContactListener());
 
-  player = new Player(640, 500, 30, 30);
-  new Platform(400, 800, 800, 30);
+  player = new Player(640, 500, 30, 30);loadPlatforms("eyJ4IjoyNjUsInkiOjgxOCwidyI6MjQsImgiOjE1NiwiZmlsbENvbG9yIjoiIzNjZDhiNiJ9;eyJ4IjozNDQuNSwieSI6ODExLjUsInciOjQxLCJoIjoxMDMsImZpbGxDb2xvciI6IiMyMjdlM2IifQ==;eyJ4Ijo0MDAsInkiOjgwMCwidyI6ODAwLCJoIjozMCwiZmlsbENvbG9yIjoiIzE5YzAyOSJ9;eyJ4IjoxMzguNSwieSI6NzcyLjUsInciOjEyMSwiaCI6MjMzLCJmaWxsQ29sb3IiOiIjYzExMDVlIn0=;eyJ4IjozNTEsInkiOjg3NCwidyI6NzAyLCJoIjoxMzYsImZpbGxDb2xvciI6IiMxY2FiMDUifQ==");
 }
 
-class CollisionDebug extends b2.JSContactFilter {
-  ShouldCollide = function (id_a, id_b) {
-    let a = entity_manager.Get(id_a);
-    let b = entity_manager.Get(id_b);
-    return true;
+
+
+class ContactListener extends b2.JSContactListener {
+  BeginContact = function(c) {
+    let contact = Box2D.wrapPointer(c, b2.b2Contact);
+    let a = entity_manager.Get(contact.GetFixtureA().a);
+    let b = entity_manager.Get(contact.GetFixtureB().a);
+    if (!(a instanceof SensorBox || b instanceof SensorBox)) { return; }
+    if (a instanceof SensorInfo && b.constructor.name != "SensorInfo") {
+      a.parent._CollisionEnter(a.side, b);
+    } else if (b instanceof SensorInfo && a.constructor.name != "SensorInfo") {
+      b.parent._CollisionEnter(b.side, a);
+    }
   }
+
+  EndContact = function(c) {
+    let contact = Box2D.wrapPointer(c, b2.b2Contact);
+    let a = entity_manager.Get(contact.GetFixtureA().a);
+    let b = entity_manager.Get(contact.GetFixtureB().a);
+    if (!(a instanceof SensorBox || b instanceof SensorBox)) { return; }
+    if (a instanceof SensorInfo && b.constructor.name != "SensorInfo") {
+      a.parent._CollisionLeave(a.side, b);
+    } else if (b instanceof SensorInfo && a.constructor.name != "SensorInfo") {
+      b.parent._CollisionEnter(b.side, a);
+    }
+  }
+
+  PreSolve = function(c,d) {}
+  PostSolve = function(c,d) {}
 }
 
 let isDrawingPlatform = false;
@@ -121,7 +142,16 @@ document.addEventListener('auxclick', function (event) { // middle click
 });
 
 
-function updateGame() {
+function updateGame() { 
+  // Update game logic here, e.g., step the physics world
+  let now = performance.now();
+  let dt = global_speed * (now - ptime) / 1000;
+
+  player._update(dt);
+  entity_manager._update(dt);
+  controller._update(dt);
+  ptime = now
+
   if (controller.jump()) {
     player.jump();
   }
@@ -131,13 +161,7 @@ function updateGame() {
   if (controller.right()) {
     player.moveRight();
   }
-
-
-  // Update game logic here, e.g., step the physics world
-  let now = performance.now();
-  let dt = global_speed*(now-ptime)/1000;
   world.Step(dt, 8, 3);
-  ptime=now
 
   // Clear canvas and redraw all objects
   const context = document.getElementById('myCanvas').getContext('2d');
@@ -150,10 +174,6 @@ function updateGame() {
 
   // Debuging info
   drawDebug(context);
-
-  player._update(dt);
-  entity_manager._update(dt);
-  controller._update(dt);
 }
 
 function drawDebug(ctx) {
@@ -162,19 +182,25 @@ function drawDebug(ctx) {
   ctx.fillText(`Velocity: (${player.body.GetLinearVelocity().get_x().toFixed(2)}, ${player.body.GetLinearVelocity().get_y().toFixed(2)})`, 10, 30);
   ctx.fillText(`Entities: ${entity_manager.size()}`, 10, 50);
   ctx.fillText(`MovementState: ${player.movementState.constructor.name}`, 10, 70);
-  const velocityHistory = player.velocityHistory;
-  if (velocityHistory.length > 0) {
-    const graphHeight = 100;
-    ctx.beginPath();
-    ctx.moveTo(10, window.innerHeight - 200 - (velocityHistory[0] / 10) * graphHeight);
-    for (let i = 0; i < velocityHistory.length; i++) {
-      const x = 10 + i * 2;
-      const y = window.innerHeight - 200 - (velocityHistory[i] / 10) * graphHeight;
-      ctx.lineTo(x, y);
-    }
-    ctx.strokeStyle = 'red';
-    ctx.stroke();
-  }
+  // const debugLines = player.debuginfo().split('\n');
+  // let y = 90;
+  // for (let line of debugLines) {
+  //   ctx.fillText(line.trim(), 10, y);
+  //   y += 20; // Space each line 20 pixels apart
+  // }
+  // const velocityHistory = player.velocityHistory;
+  // if (velocityHistory.length > 0) {
+  //   const graphHeight = 100;
+  //   ctx.beginPath();
+  //   ctx.moveTo(10, window.innerHeight - 200 - (velocityHistory[0] / 10) * graphHeight);
+  //   for (let i = 0; i < velocityHistory.length; i++) {
+  //     const x = 10 + i * 2;
+  //     const y = window.innerHeight - 200 - (velocityHistory[i] / 10) * graphHeight;
+  //     ctx.lineTo(x, y);
+  //   }
+  //   ctx.strokeStyle = 'red';
+  //   ctx.stroke();
+  // }
 }
 
 function savePlatforms() {
@@ -186,6 +212,7 @@ function loadPlatforms(str) {
   for (let i = pls.length - 1; i >= 0; i--) {
     pls[i].destroy();
   }
+  entity_manager._cleanup_now();
 
   // Deserialize the ones created by savePlatforms
   let platformStrings = str.split(";");
@@ -207,6 +234,10 @@ resizeCanvas = () => {
 };
 
 resizeCanvas();
+
+window.addEventListener('resize', resizeCanvas);
+
+
 initGame();
 
 

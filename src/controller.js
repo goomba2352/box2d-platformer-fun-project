@@ -32,7 +32,7 @@ class Controller {
   }
 
   jump() {
-    return this._keys_down.has(Controller.SPACE);
+    return this._keys_held.has(Controller.SPACE);
   }
 
   _update() {
