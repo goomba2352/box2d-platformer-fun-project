@@ -4,6 +4,7 @@ var ptime=performance.now();
 var global_speed=2;
 var object_box;
 var frame = 0;
+var debug_collisions=false;
 
 function initGame() {
   // Initialize your game here, e.g., create a new Box2D world
@@ -44,18 +45,14 @@ function updateGame() {
   } 
   world.Step(dt, 8, 3);
   controller._update(dt);
-  for (const pl of pls) {
-    pl._update(dt);
-  }
+  entity_manager.UpdateAll(dt);
 
 
   // ================== DRAW ==================
   const context = document.getElementById('myCanvas').getContext('2d');
   context.clearRect(0, 0, window.innerWidth, window.innerHeight);
   // Draw your game objects here
-  for (const pl of pls) {
-    pl.draw(context);
-  }
+  entity_manager.DrawAll(context);
 
   // Debuging info
   drawDebug(context);
@@ -65,27 +62,29 @@ function drawDebug(ctx) {
   ctx.fillStyle = 'black';
   ctx.font = '16px Arial';
   ctx.fillText(`Velocity: (${player.body.GetLinearVelocity().get_x().toFixed(2)}, ${player.body.GetLinearVelocity().get_y().toFixed(2)})`, 10, 30);
-  ctx.fillText(`Entities: ${entity_manager.size()}`, 10, 50);
+  ctx.fillText(`Entities: ${entity_manager.size()} Drawables: ${entity_manager.drawables.size}`, 10, 50);
   ctx.fillText(`MovementState: ${player.movementState.constructor.name}`, 10, 70);
-  // const debugLines = player.debuginfo().split('\n');
-  // let y = 90;
-  // for (let line of debugLines) {
-  //   ctx.fillText(line.trim(), 10, y);
-  //   y += 20; // Space each line 20 pixels apart
-  // }
-  // const velocityHistory = player.velocityHistory;
-  // if (velocityHistory.length > 0) {
-  //   const graphHeight = 100;
-  //   ctx.beginPath();
-  //   ctx.moveTo(10, window.innerHeight - 200 - (velocityHistory[0] / 10) * graphHeight);
-  //   for (let i = 0; i < velocityHistory.length; i++) {
-  //     const x = 10 + i * 2;
-  //     const y = window.innerHeight - 200 - (velocityHistory[i] / 10) * graphHeight;
-  //     ctx.lineTo(x, y);
-  //   }
-  //   ctx.strokeStyle = 'red';
-  //   ctx.stroke();
-  // }
+  if (debug_collisions) {
+    const debugLines = player.debuginfo().split('\n');
+    let y = 90;
+    for (let line of debugLines) {
+      ctx.fillText(line.trim(), 10, y);
+      y += 20; // Space each line 20 pixels apart
+    }
+    const velocityHistory = player.velocityHistory;
+    if (velocityHistory.length > 0) {
+      const graphHeight = 100;
+      ctx.beginPath();
+      ctx.moveTo(10, window.innerHeight - 200 - (velocityHistory[0] / 10) * graphHeight);
+      for (let i = 0; i < velocityHistory.length; i++) {
+        const x = 10 + i * 2;
+        const y = window.innerHeight - 200 - (velocityHistory[i] / 10) * graphHeight;
+        ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = 'red';
+      ctx.stroke();
+    }
+  }
 }
 
 class ContactListener extends b2.JSContactListener {
@@ -94,10 +93,12 @@ class ContactListener extends b2.JSContactListener {
     let a = entity_manager.Get(contact.GetFixtureA().a);
     let b = entity_manager.Get(contact.GetFixtureB().a);
     if (a instanceof SensorInfo && b instanceof SensorInfo) { return; }
-    // console.log((type == 1 ? "Enter" : "Leave") + " on frame " + frame);
-    // console.log(a);
-    // console.log(b);
-    // console.log("-------------");
+    if (debug_collisions) {
+      console.log((type == 1 ? "Enter" : "Leave") + " on frame " + frame);
+      console.log(a);
+      console.log(b);
+      console.log("-------------");
+    }
     if (a instanceof Collidable) {
       a._Collision(type, a.side, b);
     }
@@ -114,13 +115,20 @@ class ContactListener extends b2.JSContactListener {
 
 
 function savePlatforms() {
-  return pls.filter(pl => pl instanceof Platform).map(pl => pl.serialize()).join(';');
+  return entity_manager
+    .drawables
+    .values()
+    .filter(d => d.target instanceof Platform)
+    .map(d => d.target.serialize())
+    .toArray()
+    .join(";")
 }
 
 function loadPlatforms(str) {
-  // Destroy all platforms in pl
-  for (let i = pls.length - 1; i >= 0; i--) {
-    if (pls[i] instanceof Platform) { pls[i].destroy(); }
+  for (let drawable of entity_manager.drawables.values()) {
+    if (drawable.target instanceof Platform) {
+      drawable.target.destroy();
+    }
   }
   entity_manager._cleanup_now();
 
@@ -187,40 +195,32 @@ document.addEventListener('contextmenu', function (event) {
   event.preventDefault();
   let mouseX = event.clientX;
   let mouseY = event.clientY;
-
-  for (let i = pls.length - 1; i >= 0; i--) {
-    let platform = pls[i];
-    if (platform.containsMouse(mouseX, mouseY)) {
-      platform.destroy();
-      break;
+  let lastObject = null;
+  for (let object of entity_manager.drawables.values()) {
+    if (object.target.containsMouse(mouseX, mouseY)) {
+      lastObject = object.target;
     }
+  }
+  if (lastObject) {
+    lastObject.destroy();
   }
 });
 
 document.addEventListener('wheel', function (event) {
-  event.preventDefault();
   let mouseX = event.clientX;
   let mouseY = event.clientY;
 
-  for (let i = pls.length - 1; i >= 0; i--) {
-    let platform = pls[i];
-    if (platform.containsMouse(mouseX, mouseY)) {
-      if (event.deltaY < 0) { // scroll up
-        if (i > 0) {
-          // swap with the previous platform
-          let temp = pls[i - 1];
-          pls[i - 1] = platform;
-          pls[i] = temp;
-        }
-      } else if (event.deltaY > 0) { // scroll down
-        if (i < pls.length - 1) {
-          // swap with the next platform
-          let temp = pls[i + 1];
-          pls[i + 1] = platform;
-          pls[i] = temp;
-        }
-      }
-      break;
+  let lastObject = null;
+  for (let object of entity_manager.drawables.values()) {
+    if (object.target.containsMouse(mouseX, mouseY)) {
+      lastObject = object;
+    }
+  }
+  if (lastObject) {
+    if (event.deltaY < 0) {
+      entity_manager.OrderLower(lastObject);
+    } else if (event.deltaY > 0) {
+      entity_manager.OrderHigher(lastObject);
     }
   }
 });
@@ -230,12 +230,14 @@ document.addEventListener('auxclick', function (event) { // middle click
   let mouseX = event.clientX;
   let mouseY = event.clientY;
 
-  for (let i = pls.length - 1; i >= 0; i--) {
-    let platform = pls[i];
-    if (platform.containsMouse(mouseX, mouseY)) {
-      let randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
-      platform.fillColor = randomColor; // set a new fill color for the platform
-      break;
+  
+  let lastObject = null;
+  for (let object of entity_manager.drawables.values()) {
+    if (object.target.containsMouse(mouseX, mouseY)) {
+      lastObject = object;
     }
+  }
+  if (lastObject) {
+    lastObject.target.fillColor = Math.floor(Math.random() * 16777215).toString(16);
   }
 });

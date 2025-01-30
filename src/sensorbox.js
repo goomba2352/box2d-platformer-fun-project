@@ -33,7 +33,6 @@ class SensorBox extends Collidable {
     super();
     this.side = SensorBox.SELF;
     this.parent = this;
-    pls.push(this);
     // Create player body definition
     const bodyDef = new b2.b2BodyDef();
     bodyDef.set_type(b2.b2_staticBody);
@@ -59,7 +58,7 @@ class SensorBox extends Collidable {
     this.top = this._CreateSensor(SensorBox.TOP, 0, -h / (2 * UNITS) - 8 / UNITS, w / (2 * UNITS) - 0.03, 6 / UNITS);
     this.bottom = this._CreateSensor(SensorBox.BOTTOM, 0, h / (2 * UNITS) + 8 / UNITS, w / (2 * UNITS) - 0.03, 6 / UNITS);
 
-    entity_manager.Add(this);
+    entity_manager.AddDrawable(this);
     this.sensor_map = new Map();
     this.sensor_map.set(1, new Set());
     this.sensor_map.set(2, new Set());
@@ -146,13 +145,35 @@ class SensorBox extends Collidable {
   }
 
   destroy() {
-    let index = pls.indexOf(this);
-    pls.splice(index, 1);
     world.DestroyBody(this.body);
     for (let id of this.child_ids) {
       if (!entity_manager.RemoveById(id)) {}
     }
     entity_manager.Remove(this);
+  }
+
+  containsMouse(mx, my) {
+    const vertices = [];
+    for (let i = 0; i < this.center.GetVertexCount(); i++) {
+      const v = this.center.GetVertex(i);
+      vertices.push({
+        x: UNITS * (this.body.GetPosition().get_x() + v.get_x()),
+        y: UNITS * (this.body.GetPosition().get_y() + v.get_y())
+      });
+    }
+
+    // Check if the mouse position is inside the polygon using ray casting
+    let inside = false;
+    for (let i = 0, j = vertices.length - 1; i < vertices.length; j = i++) {
+      const xi = vertices[i].x, yi = vertices[i].y;
+      const xj = vertices[j].x, yj = vertices[j].y;
+
+      // Check if the ray intersects with the edge
+      if (((yi > my) !== (yj > my)) && (mx < ((xj - xi) * (my - yi) / (yj - yi)) + xi)) {
+        inside = !inside;
+      }
+    }
+    return inside;
   }
 
   debuginfo() {

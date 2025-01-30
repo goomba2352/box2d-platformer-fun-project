@@ -2,7 +2,7 @@ class Player extends SensorBox {
   static MAX_VELOCITY = 10;
   velocityHistory = [];
 
-  constructor(x,y,w,h) {
+  constructor(x, y, w, h) {
     super(x, y, w, h);
     this.body.SetType(b2.b2_dynamicBody);
     this.body.SetSleepingAllowed(false);
@@ -107,25 +107,25 @@ class FallingState extends MovementState {
     // Check if player has struck left wall
     let left_sensor = false;
     for (let entry of player.sensor_map.get(SensorBox.LEFT)) {
-      if (entry instanceof SensorBox) {
+      if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
         left_sensor = true;
         break;
       }
     }
     let right_sensor = false;
     for (let entry of player.sensor_map.get(SensorBox.RIGHT)) {
-      if (entry instanceof SensorBox) {
+      if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
         right_sensor = true;
         break;
       }
     }
     let self_sensor = false;
     for (let entry of player.sensor_map.get(SensorBox.SELF)) {
-      if (entry instanceof SensorBox) {
+      if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
         self_sensor = true;
       }
     }
-    if (((right_sensor && controller.right())|| (left_sensor && controller.left()) ) && self_sensor) {
+    if (((right_sensor && controller.right()) || (left_sensor && controller.left())) && self_sensor) {
       if (Math.abs(vx) < 0.1 && Math.abs(this.pvx) > 2) {
         player.movementState = new WallJumpState(player, this.pvx);
         return;
@@ -134,10 +134,10 @@ class FallingState extends MovementState {
 
     this.timeElapsed += dt;
     this.pvx = vx;
-    if (this.timeElapsed<0.1) { return; }
+    if (this.timeElapsed < 0.1) { return; }
     let bottom_sensor = false;
     for (let entry of player.sensor_map.get(SensorBox.BOTTOM)) {
-      if (entry instanceof SensorBox) {
+      if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
         bottom_sensor = true;
         break;
       }
@@ -151,12 +151,12 @@ class FallingState extends MovementState {
 }
 
 class WallJumpState extends MovementState {
-  timeElapsed=0;
-  pvx=0
+  timeElapsed = 0;
+  pvx = 0
   constructor(player, pvx) {
     super();
     //player.body.SetGravityScale(0.2);
-    this.pvx=pvx;
+    this.pvx = pvx;
     player.fillColor = "#A66";
   }
 
@@ -166,13 +166,13 @@ class WallJumpState extends MovementState {
     let yforce = -15;
     let abspvx = Math.abs(this.pvx);
     if (abspvx > 9) {
-      xforce*=7
-      yforce=-20;
-    } else if (abspvx>6) {
-      xforce*=4 
-      yforce=-18;
+      xforce *= 5
+      yforce = -12;
+    } else if (abspvx > 6) {
+      xforce *= 4
+      yforce = -13.5;
     } else {
-      xforce*=3
+      xforce *= 3
     }
     player.body.ApplyLinearImpulse(v2(xforce, yforce), player.position());
     player.movementState = new FallingState(player);
@@ -180,50 +180,48 @@ class WallJumpState extends MovementState {
 
   update(player, dt) {
     this.timeElapsed += dt;
-    if (player.vy() > 4) { 
+    if (player.vy() > 4) {
       player.body.ApplyLinearImpulse(v2(0, -2.5), player.position());
     } else if (player.vy() > 1) {
       player.body.ApplyLinearImpulse(v2(0, -0.8), player.position());
     } else if (player.vy() < 1) {
       player.body.ApplyLinearImpulse(v2(0, 0.2), player.position());
     }
-    if (this.timeElapsed>1) {
-      player.movementState=new FallingState(player);
+    if (this.timeElapsed > 1.5) {
+      player.movementState = new FallingState(player);
       return;
     }
     let left_sensor = false;
     for (let entry of player.sensor_map.get(SensorBox.LEFT)) {
-      if (entry instanceof SensorBox) {
+      if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
         left_sensor = true;
         break;
       }
     }
     let right_sensor = false;
     for (let entry of player.sensor_map.get(SensorBox.RIGHT)) {
-      if (entry instanceof SensorBox) {
+      if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
         right_sensor = true;
         break;
       }
     }
-    if (this.pvx < 0 && !left_sensor) {
-      player.movementState = new FallingState(player);
-      return;
-    } else if (this.pvx > 0 && !right_sensor) {
-      player.movementState = new FallingState(player);
-      return;
-    }
+
     let bottom_sensor = false;
     for (let entry of player.sensor_map.get(SensorBox.BOTTOM)) {
-      if (entry instanceof SensorBox) {
+      if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
         bottom_sensor = true;
         break;
       }
     }
     let self_sensor = false;
     for (let entry of player.sensor_map.get(SensorBox.SELF)) {
-      if (entry instanceof SensorBox) {
+      if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
         self_sensor = true;
       }
+    }
+    if (!self_sensor) {
+      player.movementState = new FallingState(player);
+      return;
     }
     if (bottom_sensor && self_sensor) {
       player.movementState = new GroundState(player);
