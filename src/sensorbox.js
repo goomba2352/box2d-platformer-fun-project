@@ -153,6 +153,8 @@ class SensorBox extends Collidable {
   }
 
   containsMouse(mx, my) {
+    mx+=camera.dx();
+    my+=camera.dy();
     const vertices = [];
     for (let i = 0; i < this.center.GetVertexCount(); i++) {
       const v = this.center.GetVertex(i);

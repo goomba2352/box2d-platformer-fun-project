@@ -50,6 +50,8 @@ class CircleObject extends Collidable {
   }
 
   containsMouse(mx, my) {
+    mx+=camera.dx();
+    my+=camera.dy();
     let r = this.r;
     let x = this.body.GetPosition().get_x() * UNITS;
     let y = this.body.GetPosition().get_y() * UNITS;

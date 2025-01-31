@@ -163,14 +163,14 @@ let isDrawingPlatform = false;
 document.addEventListener('mousedown', function (event) {
   if (event.button != 0) return;
   isDrawingPlatform = true;
-  startDrawX = event.clientX;
-  startDrawY = event.clientY;
+  startDrawX = event.clientX + camera.dx();
+  startDrawY = event.clientY + camera.dy();
 });
 
 document.addEventListener('mousemove', function (event) {
   if (!isDrawingPlatform) return;
-  let endDrawX = event.clientX;
-  let endDrawY = event.clientY;
+  let endDrawX = event.clientX + camera.dx();
+  let endDrawY = event.clientY + camera.dy();
 
   // Remove the previous platform
   if (new_pl != null) {

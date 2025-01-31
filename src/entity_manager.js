@@ -15,6 +15,63 @@ class DrawableEntity {
 
 }
 
+class Camera {
+  dx_ = 0
+  dy_ = 0
+
+  trackingspeed(p,ip) {
+    let diff = Math.abs(p-ip);
+    if (diff < 20) {
+      return 0;
+    } else if (diff < 50) {
+      return .5;
+    } else if (diff < 80) {
+      return 1;
+    } else if (diff < 150) {
+      return 3;
+    } else if (diff < 300) {
+      return 6;
+    } else {
+      return 10;
+    }
+  }
+
+  idealx() {
+    return player.position().get_x() * UNITS - canvas.width / 2;
+  }
+
+  idealy() {
+    return player.position().get_y() * UNITS - canvas.height / 2;
+  }
+
+  dx() {
+    return this.dx_;
+  }
+  dy() {
+    return this.dy_;
+  }
+
+  _update(dt) {
+    let idealx = this.idealx();
+    let idealy = this.idealy();
+    let tx = this.trackingspeed(this.dx_, idealx);
+    if (this.dx_ < idealx) {
+      this.dx_+=tx;
+    } else if (this.dx_ > idealx) {
+      this.dx_-=tx;
+    }
+
+    let ty = this.trackingspeed(this.dy_, idealy);
+    if (this.dy_ < idealy) {
+      this.dy_+=ty;
+    } else if (this.dy_ > idealy) {
+      this.dy_-=ty;
+    }
+  }
+}
+
+var camera = new Camera();
+
 class EntityManager {
   constructor() {
     this.es = new Map();
@@ -82,12 +139,15 @@ class EntityManager {
   }
 
   DrawAll(ctx) {
+    ctx.translate(-camera.dx(),-camera.dy());
     for (let drawable of this.drawables.values()) {
       drawable.draw(ctx);
     }
+    ctx.translate(camera.dx(),camera.dy());
   }
 
   UpdateAll(dt) {
+    camera._update(dt);
     for (let drawable of this.drawables.values()) {
       drawable._update(dt);
     }
