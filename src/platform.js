@@ -1,7 +1,7 @@
 class Platform extends SensorBox {
   fillColor = "#080";
   constructor(x, y, w, h) {
-    super(x, y, w, h);
+    super(x, y, w, h); 
     this.body.SetType(b2.b2_staticBody);
   }
 

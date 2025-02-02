@@ -160,14 +160,14 @@ let startDrawX, startDrawY;
 let new_pl = null;
 let isDrawingPlatform = false;
 
-document.addEventListener('mousedown', function (event) {
+canvas.addEventListener('mousedown', function (event) {
   if (event.button != 0) return;
   isDrawingPlatform = true;
   startDrawX = event.clientX + camera.dx();
   startDrawY = event.clientY + camera.dy();
 });
 
-document.addEventListener('mousemove', function (event) {
+canvas.addEventListener('mousemove', function (event) {
   if (!isDrawingPlatform) return;
   let endDrawX = event.clientX + camera.dx();
   let endDrawY = event.clientY + camera.dy();
@@ -186,12 +186,12 @@ document.addEventListener('mousemove', function (event) {
   new_pl = new Platform(x, y, width, height);
 });
 
-document.addEventListener('mouseup', function (event) {
+canvas.addEventListener('mouseup', function (event) {
   isDrawingPlatform = false;
   new_pl = null;
 });
 
-document.addEventListener('contextmenu', function (event) {
+canvas.addEventListener('contextmenu', function (event) {
   event.preventDefault();
   let mouseX = event.clientX;
   let mouseY = event.clientY;
@@ -206,7 +206,7 @@ document.addEventListener('contextmenu', function (event) {
   }
 });
 
-document.addEventListener('wheel', function (event) {
+canvas.addEventListener('wheel', function (event) {
   let mouseX = event.clientX;
   let mouseY = event.clientY;
 
@@ -225,7 +225,7 @@ document.addEventListener('wheel', function (event) {
   }
 });
 
-document.addEventListener('auxclick', function (event) { // middle click
+canvas.addEventListener('auxclick', function (event) { // middle click
   event.preventDefault();
   let mouseX = event.clientX;
   let mouseY = event.clientY;
