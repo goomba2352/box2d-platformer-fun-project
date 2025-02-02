@@ -234,10 +234,10 @@ document.addEventListener('auxclick', function (event) { // middle click
   let lastObject = null;
   for (let object of entity_manager.drawables.values()) {
     if (object.target.containsMouse(mouseX, mouseY)) {
-      lastObject = object;
+      lastObject = object.target;
     }
   }
-  if (lastObject) {
-    lastObject.target.fillColor = Math.floor(Math.random() * 16777215).toString(16);
+  if (lastObject != null) {
+    lastObject.fillColor = "#" + Math.floor(Math.random() * 16777215).toString(16);
   }
 });

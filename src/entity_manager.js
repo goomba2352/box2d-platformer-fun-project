@@ -16,24 +16,15 @@ class DrawableEntity {
 }
 
 class Camera {
-  dx_ = 0
-  dy_ = 0
+  dx_ = 0;
+  dy_ = 0;
 
-  trackingspeed(p,ip) {
-    let diff = Math.abs(p-ip);
+  trackingspeed() {
+    let diff = Math.sqrt((this.dx_ - this.idealx()) ** 2  + (this.dy_ - this.idealy()) ** 2);
     if (diff < 20) {
       return 0;
-    } else if (diff < 50) {
-      return .5;
-    } else if (diff < 80) {
-      return 1;
-    } else if (diff < 150) {
-      return 3;
-    } else if (diff < 300) {
-      return 6;
-    } else {
-      return 10;
     }
+    return (diff-20)/30;
   }
 
   idealx() {
@@ -45,28 +36,19 @@ class Camera {
   }
 
   dx() {
-    return this.dx_;
+    return Math.floor(this.dx_);
   }
   dy() {
-    return this.dy_;
+    return Math.floor(this.dy_);
   }
 
   _update(dt) {
-    let idealx = this.idealx();
-    let idealy = this.idealy();
-    let tx = this.trackingspeed(this.dx_, idealx);
-    if (this.dx_ < idealx) {
-      this.dx_+=tx;
-    } else if (this.dx_ > idealx) {
-      this.dx_-=tx;
-    }
-
-    let ty = this.trackingspeed(this.dy_, idealy);
-    if (this.dy_ < idealy) {
-      this.dy_+=ty;
-    } else if (this.dy_ > idealy) {
-      this.dy_-=ty;
-    }
+    let dx = this.dx_ - this.idealx();
+    let dy = this.dy_ - this.idealy();
+    let ts = this.trackingspeed();
+    let rad = Math.atan2(dy, dx);
+    this.dx_ -= ts * Math.cos(rad);
+    this.dy_ -= ts * Math.sin(rad);
   }
 }
 
