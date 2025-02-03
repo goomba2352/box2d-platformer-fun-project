@@ -91,8 +91,14 @@ class EntityManager {
     for (let t of this.drawables.values()) {
       if (swap_next) {
         let temp = t.target;
+        let tempkey = t.target.__removekey;
+
+        t.target.__removekey = previous.target.__removekey;
         t.target = previous.target;
+        
+        previous.target.__removekey = tempkey;
         previous.target = temp;
+
         break;
       }
       let id = t.target.id;
@@ -112,8 +118,15 @@ class EntityManager {
           return false;
         }
         let temp = t.target;
+        let tempkey = t.target.__removekey;
+
+        t.target.__removekey = previous.target.__removekey;
         t.target = previous.target;
+        
+        previous.target.__removekey = tempkey;
         previous.target = temp;
+
+        
         break;
       }
       previous = t;
