@@ -139,6 +139,7 @@ class ColorProperty extends AbstractProperty {
     let input = document.createElement("input");
     input.type = "color";
     input.value = this.value;
+    console.log(input.value);
     input.id = "input-" + AbstractProperty.GLOBAL_ID++;
     input.onchange = (e) => {
       this.value = event.target.value; this._Update(e);
@@ -182,6 +183,7 @@ class PropertyEditor {
   AddProperty(p) {
     p.parent_editor = this;
     p.value = this.parent[p.objectKey];
+    console.log(this.parent[p.objectKey]);
     this.properties.push(p);
     return this;
   }
