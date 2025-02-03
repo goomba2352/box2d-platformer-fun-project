@@ -202,7 +202,7 @@ canvas.addEventListener('contextmenu', function (event) {
     }
   }
   if (lastObject) {
-    lastObject.destroy();
+    new GUIWindow(mouseX, mouseY, 320, 200, lastObject);
   }
 });
 

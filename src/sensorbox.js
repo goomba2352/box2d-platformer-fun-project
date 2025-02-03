@@ -20,7 +20,15 @@ class SensorInfo extends Collidable {
   }
 }
 
-class SensorBox extends Collidable {
+class GameObject extends Collidable {
+  destroy() {}
+
+  editableProperties() { return new PropertyEditor(this); }
+
+  containsMouse(mx, my) { return false; }
+}
+
+class SensorBox extends GameObject {
   static LEFT = 1;
   static RIGHT = 2;
   static TOP = 4;
@@ -195,5 +203,10 @@ class SensorBox extends Collidable {
         }
     }
     return result;
+  }
+
+  editableProperties() {
+    return new PropertyEditor(this)
+      .AddProperty(new ColorProperty("Color", "fillColor"));
   }
 }
