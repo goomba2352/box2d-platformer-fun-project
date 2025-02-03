@@ -176,16 +176,11 @@ class WallJumpState extends MovementState {
       return;
     }
     let self_sensor = this.StopableCollision(SensorBox.SELF);
-    let bottom_sensor = this.StopableCollision(SensorBox.BOTTOM);
-    for (let entry of player.sensor_map.get(SensorBox.SELF)) {
-      if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
-        self_sensor = true;
-      }
-    }
     if (!self_sensor) {
       player.movementState = new FallingState(player);
       return;
     }
+    let bottom_sensor = this.StopableCollision(SensorBox.BOTTOM);
     if (bottom_sensor && self_sensor) {
       player.movementState = new GroundState(player);
       return;
