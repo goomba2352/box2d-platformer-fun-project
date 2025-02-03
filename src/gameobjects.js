@@ -12,7 +12,7 @@ class ObjectBox extends SensorBox {
 
 var last_cir;
 
-class CircleObject extends Collidable {
+class CircleObject extends GameObject {
   constructor(x, y, r) {
     super();
     this.parent = this;

@@ -1,8 +1,17 @@
 // Creates a new floating div.
+var pe = null;
 class GUIWindow {
 
+  div = null;
+  destroy() {
+    pe = null;
+    document.body.removeChild(this.div);
+  }
+
   constructor(x=10, y=10, w=320, h=200, e) {
+    pe = this;
     let div = document.createElement("div");
+    this. div = div;
     div.classList.add("window");
     div.style.position = "fixed";
     div.style.left = x + "px";
@@ -16,7 +25,7 @@ class GUIWindow {
 
     let titleText = document.createElement('div');
     titleText.classList.add("title-bar-text");
-    titleText.textContent = "Window Title";
+    titleText.textContent = "Editing " + e.constructor.name;
     titleText.style.userSelect = "none";
     titleBar.appendChild(titleText);
 
@@ -27,7 +36,7 @@ class GUIWindow {
     let closeButton = document.createElement("button");
     closeButton.ariaLabel = "Close";
     closeButton.addEventListener("click", () => {
-      div.remove();
+      this.destroy();
     });
     titleBarControls.appendChild(closeButton);
 
@@ -37,23 +46,29 @@ class GUIWindow {
     div.appendChild(contentArea);
     document.body.appendChild(div);
 
-    contentArea.appendChild(e.editableProperties().Render());
-
+    let props = e.editableProperties().Render();
     let destroyButton = document.createElement("button");
+    let destroyButtonDiv = document.createElement("div");
+    destroyButtonDiv.classList += "field-row";
+    destroyButtonDiv.appendChild(destroyButton);
+    props.appendChild(destroyButtonDiv);
+    contentArea.appendChild(props);
+
     destroyButton.textContent = "Destroy";
     destroyButton.addEventListener("click", () => {
       if (e && e.destroy) {
-        document.body.removeChild(div);
         e.destroy();
+        this.destroy();
       }
     });
-    contentArea.appendChild(destroyButton);
+
 
 
     let isDragging = false;
     let offsetX, offsetY;
 
     titleBar.addEventListener("mousedown", (e) => {
+      e.preventDefault();
       if (e.target === titleBar || e.target === titleText) { // Only start dragging on title bar or title text
         isDragging = true;
         offsetX = e.clientX - div.offsetLeft;
@@ -63,6 +78,7 @@ class GUIWindow {
     });
 
     document.addEventListener("mousemove", (e) => {
+      e.preventDefault();
       if (isDragging) {
         div.style.left = (e.clientX - offsetX) + "px";
         div.style.top = (e.clientY - offsetY) + "px";
@@ -80,6 +96,10 @@ class GUIWindow {
       return false;
     });
 
+    div.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
+
     return div;
   }
 }
@@ -89,6 +109,7 @@ class AbstractProperty {
   objectKey = "";
   parent_editor;
   value = null;
+  static GLOBAL_ID = 0;
 
   constructor(name, objectKey) {
     this.name = name;
@@ -96,32 +117,54 @@ class AbstractProperty {
   }
 
   _Update(event) {
-    this.value = event.target.value;
     this.parent_editor.parent[this.objectKey] = this.value;
-    console.log(this.value);
+    this.parent_editor.parent.updatePropertyCallback(this.objectKey, this.value);
   }
 
-  _GetBaseHTMLElement() {
-    let div = document.createElement("div");
+  _GetBaseLabel() {
     let label = document.createElement("label");
     label.textContent = this.name;
-    div.appendChild(label);
-    return div; 
+    return label
   }
 
   GetHTMLElement() {
-    return this._GetBaseHTMLElement();    
+    return this._GetBaseHTMLElement();
   }
 }
 
 class ColorProperty extends AbstractProperty {
   GetHTMLElement() {
-    let base = this._GetBaseHTMLElement();
+    let base = document.createElement("div");
+    base.classList += "field-row";
     let input = document.createElement("input");
     input.type = "color";
     input.value = this.value;
-    input.onchange = (e) => { this._Update(e); }
+    input.id = "input-" + AbstractProperty.GLOBAL_ID++;
+    input.onchange = (e) => {
+      this.value = event.target.value; this._Update(e);
+    }
+    let label = this._GetBaseLabel();
+    label.htmlFor = input.id;
     base.appendChild(input);
+    base.appendChild(label);
+
+    return base;
+  }
+}
+
+class BoolProperty extends AbstractProperty {
+  GetHTMLElement() {
+    let base = document.createElement("div");
+    let input = document.createElement("input");
+    base.classList += "field-row";
+    input.type = "checkbox";
+    input.id = "input-" + AbstractProperty.GLOBAL_ID++;
+    input.checked = this.value;
+    input.onchange = (e) => { this.value = input.checked; this._Update(e); }
+    let label = this._GetBaseLabel();
+    label.htmlFor = input.id;
+    base.appendChild(input);
+    base.appendChild(label);
 
     return base;
   }
@@ -132,6 +175,7 @@ class PropertyEditor {
   parent = null;
 
   constructor(parent) {
+    console.log(parent);
     this.parent = parent;
   }
 
@@ -139,7 +183,6 @@ class PropertyEditor {
     p.parent_editor = this;
     p.value = this.parent[p.objectKey];
     this.properties.push(p);
-    console.log(this.parent);
     return this;
   }
 

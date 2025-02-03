@@ -202,7 +202,8 @@ canvas.addEventListener('contextmenu', function (event) {
     }
   }
   if (lastObject) {
-    new GUIWindow(mouseX, mouseY, 320, 200, lastObject);
+    if (pe != null) { pe.destroy(); }
+    new GUIWindow(mouseX + 20, mouseY + 20, 320, 200, lastObject);
   }
 });
 
@@ -238,6 +239,5 @@ canvas.addEventListener('auxclick', function (event) { // middle click
     }
   }
   if (lastObject != null) {
-    lastObject.fillColor = "#" + Math.floor(Math.random() * 16777215).toString(16);
   }
 });

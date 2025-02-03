@@ -54,6 +54,14 @@ class Player extends SensorBox {
 }
 
 class MovementState {
+  StopableCollision(side) {
+    for (let entry of player.sensor_map.get(side)) {
+      if (entry instanceof Collidable && entry.collision_on) {
+        return true;
+      }
+    }
+    return false;
+  }
   left(player) {
     if (player.vx() < -Player.MAX_VELOCITY) return;
     player.body.ApplyForce(v2(-10, 0), player.position());
@@ -104,27 +112,9 @@ class FallingState extends MovementState {
 
   update(player, dt) {
     let vx = player.vx();
-    // Check if player has struck left wall
-    let left_sensor = false;
-    for (let entry of player.sensor_map.get(SensorBox.LEFT)) {
-      if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
-        left_sensor = true;
-        break;
-      }
-    }
-    let right_sensor = false;
-    for (let entry of player.sensor_map.get(SensorBox.RIGHT)) {
-      if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
-        right_sensor = true;
-        break;
-      }
-    }
-    let self_sensor = false;
-    for (let entry of player.sensor_map.get(SensorBox.SELF)) {
-      if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
-        self_sensor = true;
-      }
-    }
+    let self_sensor = this.StopableCollision(SensorBox.SELF);
+    let left_sensor = this.StopableCollision(SensorBox.LEFT);
+    let right_sensor = this.StopableCollision(SensorBox.RIGHT);
     if (((right_sensor && controller.right()) || (left_sensor && controller.left())) && self_sensor) {
       if (Math.abs(vx) < 0.1 && Math.abs(this.pvx) > 2) {
         player.movementState = new WallJumpState(player, this.pvx);
@@ -135,13 +125,7 @@ class FallingState extends MovementState {
     this.timeElapsed += dt;
     this.pvx = vx;
     if (this.timeElapsed < 0.1) { return; }
-    let bottom_sensor = false;
-    for (let entry of player.sensor_map.get(SensorBox.BOTTOM)) {
-      if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
-        bottom_sensor = true;
-        break;
-      }
-    }
+    let bottom_sensor = this.StopableCollision(SensorBox.BOTTOM);
     if (bottom_sensor && self_sensor) {
       player.movementState = new GroundState(player);
       return;
@@ -191,29 +175,8 @@ class WallJumpState extends MovementState {
       player.movementState = new FallingState(player);
       return;
     }
-    let left_sensor = false;
-    for (let entry of player.sensor_map.get(SensorBox.LEFT)) {
-      if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
-        left_sensor = true;
-        break;
-      }
-    }
-    let right_sensor = false;
-    for (let entry of player.sensor_map.get(SensorBox.RIGHT)) {
-      if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
-        right_sensor = true;
-        break;
-      }
-    }
-
-    let bottom_sensor = false;
-    for (let entry of player.sensor_map.get(SensorBox.BOTTOM)) {
-      if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
-        bottom_sensor = true;
-        break;
-      }
-    }
-    let self_sensor = false;
+    let self_sensor = this.StopableCollision(SensorBox.SELF);
+    let bottom_sensor = this.StopableCollision(SensorBox.BOTTOM);
     for (let entry of player.sensor_map.get(SensorBox.SELF)) {
       if (entry instanceof Collidable && !(entry instanceof SensorInfo)) {
         self_sensor = true;

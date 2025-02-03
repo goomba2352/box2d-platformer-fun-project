@@ -2,12 +2,14 @@ class Collidable {
   side;
   parent;
   id;
+  collision_on=true;
 }
 
 class SensorInfo extends Collidable {
   side;
   parent;
   id;
+  collision_on=false;
 
   constructor(side, parent, id) {
     super();
@@ -24,6 +26,8 @@ class GameObject extends Collidable {
   destroy() {}
 
   editableProperties() { return new PropertyEditor(this); }
+
+  updatePropertyCallback(prop) {}
 
   containsMouse(mx, my) { return false; }
 }
@@ -54,6 +58,7 @@ class SensorBox extends GameObject {
     centerDef.set_shape(this.center);
     centerDef.set_restitution(0.00); // Bounce effect
     let f = this.body.CreateFixture(centerDef);
+    this.fixture = f;
     this.id = f.a;
     this.child_ids=[];
     this.body.SetTransform(new b2.b2Vec2(x / UNITS, y / UNITS), 0)
@@ -186,6 +191,12 @@ class SensorBox extends GameObject {
     return inside;
   }
 
+  updatePropertyCallback(objectKey, value) {
+    if (objectKey == "collision_on") {
+      this.fixture.SetSensor(!value);
+    }
+  }
+
   debuginfo() {
     let result = "Sensor Map:\n";
     const sensors = {
@@ -207,6 +218,7 @@ class SensorBox extends GameObject {
 
   editableProperties() {
     return new PropertyEditor(this)
-      .AddProperty(new ColorProperty("Color", "fillColor"));
+      .AddProperty(new ColorProperty(" Color", "fillColor"))
+      .AddProperty(new BoolProperty(" Collision On/Off", "collision_on"));
   }
 }
