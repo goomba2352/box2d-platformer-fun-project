@@ -19,12 +19,12 @@ class Camera {
   dx_ = 0;
   dy_ = 0;
 
-  trackingspeed() {
-    let diff = Math.sqrt((this.dx_ - this.idealx()) ** 2  + (this.dy_ - this.idealy()) ** 2);
+  trackingspeed(dt, dx, dy) {
+    let diff = Math.sqrt(dx ** 2 + dy ** 2);
     if (diff < 20) {
       return 0;
     }
-    return (diff-20)/30;
+    return (diff-20)*dt*1.5;
   }
 
   idealx() {
@@ -45,7 +45,7 @@ class Camera {
   _update(dt) {
     let dx = this.dx_ - this.idealx();
     let dy = this.dy_ - this.idealy();
-    let ts = this.trackingspeed();
+    let ts = this.trackingspeed(dt, dx, dy);
     let rad = Math.atan2(dy, dx);
     this.dx_ -= ts * Math.cos(rad);
     this.dy_ -= ts * Math.sin(rad);
@@ -170,4 +170,79 @@ class EntityManager {
   }
 }
 
+class Tex {
+  _canvas;
+  _pattern;
+  _update;
+  _bits;
+  _color;
+  constructor(color) {
+    this._canvas = document.createElement("canvas");
+    this._canvas.width=8;
+    this._canvas.height=8;
+    this._bits = new Uint8Array(8);
+    this._bits[0]=0b00110011;
+    this._bits[1]=0b00110011;
+    this._bits[2]=0b11001100;
+    this._bits[3]=0b11001100;
+    this._bits[4]=0b00110011;
+    this._bits[5]=0b00110011;
+    this._bits[6]=0b11001100;
+    this._bits[7]=0b11001100;
+    this._update = true;
+    this._color = color;
+  }
+
+  context() {
+    return this._canvas.getContext("2d");
+  }
+
+  updatePropertyCallback(k,v) {
+    this.markUpdated();
+  }
+
+  markUpdated() {
+    this._update = true;
+  }
+
+  pattern(ctx, color) {
+    if (this._update) {
+      let context = this.context();
+      context.clearRect(0,0,8,8);
+      for (let row = 0; row < 8; ++row) {
+        for (let col = 0; col < 8; ++col) {
+          if ((this._bits[row] >> col) & 1) {
+            context.fillStyle = this._color;
+          } else {
+            context.fillStyle = "#00000000";
+          }
+          context.fillRect(col, row, 1, 1);
+        }
+      }
+      this._pattern = ctx.createPattern(this._canvas, "repeat");
+      this._update = false;
+    }
+    return this._pattern;
+  }
+}
+
+class TexManager {
+  texs = [];
+
+  CreateTex(color) {
+    this.texs.push(new Tex(color));
+    return this.texs[this.texs.length-1];
+  }
+
+  GetTex(id) {
+    return this.texs[id];
+  }
+}
+
 var entity_manager = new EntityManager();
+var tex_manager = new TexManager();
+var tex0 = tex_manager.CreateTex("#00CC00");
+for (let i = 0; i < 10; i++) {
+  tex_manager.CreateTex("#000");
+}
+tex0.markUpdated();

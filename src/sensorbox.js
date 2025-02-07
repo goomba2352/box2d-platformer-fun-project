@@ -50,6 +50,7 @@ class SensorBox extends GameObject {
     bodyDef.set_type(b2.b2_staticBody);
     bodyDef.set_allowSleep(false);
     this.body = world.CreateBody(bodyDef);
+    this.tex=-1;
 
     this.center = new b2.b2PolygonShape();
     this.center.SetAsBox(w / (2 * UNITS), h / (2 * UNITS));
@@ -113,7 +114,7 @@ class SensorBox extends GameObject {
   HandleCollision(type, other) { }
 
   draw(ctx) {
-    this.draw_rect_shape(this.center, ctx, this.fillColor);
+    this.draw_rect_shape(this.center, ctx);
     // this.draw_rect_shape(this.left, ctx, '#990');
     // this.draw_rect_shape(this.right, ctx, '#990');
     // this.draw_rect_shape(this.top, ctx, '#990');
@@ -127,17 +128,21 @@ class SensorBox extends GameObject {
     }
   }
 
-  draw_rect_shape(shape, ctx, color) {
+  draw_rect_shape(shape, ctx) {
     // Get the vertices of the player's body in world coordinates
     const vertices = [];
     // Convert to screen coordinates and scale appropriately
     for (let i = 0; i < shape.GetVertexCount(); i++) {
       const v = shape.GetVertex(i);
       vertices.push({
-        x: UNITS * (this.body.GetPosition().get_x() + v.get_x()),
-        y: UNITS * (this.body.GetPosition().get_y() + v.get_y())
+        x: UNITS * (v.get_x()),
+        y: UNITS * (v.get_y())
       });
     }
+
+    let tx = this.body.GetPosition().get_x() * UNITS;
+    let ty = this.body.GetPosition().get_y() * UNITS;
+    ctx.translate(tx,ty);
 
     // Draw the polygon using the vertices
     ctx.beginPath();
@@ -150,11 +155,14 @@ class SensorBox extends GameObject {
     }
 
     // Draw the outline
-    ctx.strokeStyle = color;
-    ctx.fillStyle = color;
+    ctx.strokeStyle = this.fillColor;
+    ctx.fillStyle = this.fillColor;
     ctx.fill();
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    if (this.tex >= 0) {
+      ctx.fillStyle = tex_manager.GetTex(this.tex).pattern(ctx);
+      ctx.fill();
+    } 
+    ctx.translate(-tx,-ty);
   }
 
   destroy() {
@@ -219,6 +227,7 @@ class SensorBox extends GameObject {
   editableProperties() {
     return new PropertyEditor(this)
       .AddProperty(new ColorProperty(" Color", "fillColor"))
-      .AddProperty(new BoolProperty(" Collision On/Off", "collision_on"));
+      .AddProperty(new BoolProperty(" Collision On/Off", "collision_on"))
+      .AddProperty(new TexProperty("Texture", "tex"));
   }
 }
