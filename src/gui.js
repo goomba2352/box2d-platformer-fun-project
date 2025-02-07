@@ -163,7 +163,6 @@ class ColorProperty extends AbstractProperty {
     let input = document.createElement("input");
     input.type = "color";
     input.value = this.value;
-    console.log(input.value);
     input.id = "input-" + AbstractProperty.GLOBAL_ID++;
     input.onchange = (e) => {
       this.value = event.target.value; this._Update(e);
@@ -196,6 +195,36 @@ class BoolProperty extends AbstractProperty {
 }
 
 var te = null;
+
+class SelectProperty extends AbstractProperty {
+  constructor(name, objectKey, options, values) {
+    super(name, objectKey);
+    if (options.length != values.length) {
+      throw Exception("options and values different sizes");
+    }
+    this.options = options;
+    this.values = values;
+  }
+  GetHTMLElement() {
+    let base = document.createElement("div");    base.classList += "field-row";
+    let input = document.createElement("select");
+    for (let i = 0; i < this.options.length; i++) {
+      let option = document.createElement("option");
+      option.innerText = this.options[i]; 
+      option.value = this.values[i];
+      input.appendChild(option);
+    }
+    input.onchange = (e) => { this.value = parseInt(e.target.value); this._Update(e); }
+    let label = this._GetBaseLabel();
+    label.htmlFor = input.id;
+    input.value = this.parent_editor.parent[this.objectKey];
+    base.appendChild(input);
+    base.appendChild(label);
+
+    return base;
+  }
+}
+
 
 class TexProperty extends AbstractProperty {
   GetHTMLElement() {
@@ -330,6 +359,17 @@ class TexEditor {
           ctx.fillRect(16*j,16*i,16,16);
         }
       }
+      for (let i = 0; i < bits.length; i++) {
+        ctx.strokeStyle = "#808080";
+        ctx.beginPath();
+        ctx.moveTo(0, 16 * i);
+        ctx.lineTo(128, 16 * i);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(16 * i, 0);
+        ctx.lineTo(16 * i, 128);
+        ctx.stroke();
+      }
     }
     draw(pixelEditor.getContext("2d"));
     let down = false;
@@ -381,6 +421,11 @@ class TexEditor {
     pixelEditor.addEventListener("mouseup", this.removeMe);
     document.addEventListener("mouseup", this.removeMe)
     div.appendChild(pixelEditor);
+
+    let props = new PropertyEditor(tex_manager.GetTex(tex))
+      .AddProperty(new SelectProperty("Texture size", "_size", ["7x7", "8x8"], [7, 8]))
+    div.appendChild(props.Render());
+
     document.body.appendChild(div);
   }
 }
@@ -391,14 +436,12 @@ class PropertyEditor {
   parent = null;
 
   constructor(parent) {
-    console.log(parent);
     this.parent = parent;
   }
 
   AddProperty(p) {
     p.parent_editor = this;
     p.value = this.parent[p.objectKey];
-    console.log(this.parent[p.objectKey]);
     this.properties.push(p);
     return this;
   }

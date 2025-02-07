@@ -109,6 +109,17 @@ class EntityManager {
     }
   }
 
+  PlayerOrder() {
+    let result = 0;
+    for (let i of this.drawables.values()) {
+      if (i.target instanceof Player) {
+        return result;
+      }
+      result++;
+    }
+    return -1;
+  }
+
   OrderLower(drawable) {
     let previous = null;
     for (let t of this.drawables.values()) {
@@ -174,10 +185,12 @@ class Tex {
   _canvas;
   _bits;
   _available_colors = new Map();
-  constructor(color) {
+  _size;
+  constructor(size) {
+    this._size=size;
     this._canvas = document.createElement("canvas");
-    this._canvas.width=16;
-    this._canvas.height=16;
+    this._canvas.width=2*this._size;
+    this._canvas.height=2*this._size;
     this._bits = new Uint8Array(8);
     this._bits[0]=0b00110011;
     this._bits[1]=0b00110011;
@@ -187,7 +200,6 @@ class Tex {
     this._bits[5]=0b00110011;
     this._bits[6]=0b11001100;
     this._bits[7]=0b11001100;
-    this._color = color;
   }
 
   context() {
@@ -200,6 +212,22 @@ class Tex {
 
   markUpdated() {
     this._available_colors = new Map();
+    this._canvas.width=2*this._size;
+    this._canvas.height=2*this._size;
+  }
+
+  serialize() {
+    return btoa(JSON.stringify({
+      b: btoa(String.fromCharCode.apply(null, this._bits)),
+      s: this._size
+    }));
+  }
+
+  deserialize(serializedString) {
+    const data = JSON.parse(atob(serializedString));
+    this._bits = Uint8Array.from(atob(data.b), c => c.charCodeAt(0));
+    this._size=data.s;
+    this.markUpdated();
   }
 
   pattern(ctx, color) {
@@ -225,20 +253,38 @@ class Tex {
 class TexManager {
   texs = [];
 
-  CreateTex(color) {
-    this.texs.push(new Tex(color));
+  CreateTex(size) {
+    this.texs.push(new Tex(size));
     return this.texs[this.texs.length-1];
   }
 
   GetTex(id) {
     return this.texs[id];
   }
+
+  serialize() {
+    let texsSerialized = [];
+    this.texs.forEach(t => texsSerialized.push(t.serialize()));
+    return btoa(JSON.stringify({
+      t: texsSerialized,
+    }));
+  }
+
+  deserialize(serializedString) {
+    const data = JSON.parse(atob(serializedString));
+    for (let i = 0;  i < data.t.length; i++) {
+      if (this.texs.length<=i) {
+        this.CreateTex(data.t[i].s);
+      }
+      this.texs[i].deserialize(data.t[i]);
+    }
+  }
 }
 
 var entity_manager = new EntityManager();
 var tex_manager = new TexManager();
-var tex0 = tex_manager.CreateTex("#00CC00");
+var tex0 = tex_manager.CreateTex(8);
 for (let i = 0; i < 10; i++) {
-  tex_manager.CreateTex("#000");
+  tex_manager.CreateTex(8);
 }
 tex0.markUpdated();

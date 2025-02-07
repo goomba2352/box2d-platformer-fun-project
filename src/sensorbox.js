@@ -43,6 +43,10 @@ class SensorBox extends GameObject {
 
   constructor(x, y, w, h) {
     super();
+    w=grid(w,16);
+    h=grid(h,16);
+    x=grid(x,16);
+    y=grid(y,16);
     this.side = SensorBox.SELF;
     this.parent = this;
     // Create player body definition
@@ -52,6 +56,7 @@ class SensorBox extends GameObject {
     this.body = world.CreateBody(bodyDef);
     this.tex=-1;
     this.texcolor="#000000";
+    this.strokeColor='#000000';
 
     this.center = new b2.b2PolygonShape();
     this.center.SetAsBox(w / (2 * UNITS), h / (2 * UNITS));
@@ -156,13 +161,15 @@ class SensorBox extends GameObject {
     }
 
     // Draw the outline
-    ctx.strokeStyle = this.fillColor;
+    ctx.strokeStyle = this.strokeColor;
     ctx.fillStyle = this.fillColor;
     ctx.fill();
     if (this.tex >= 0) {
       ctx.fillStyle = tex_manager.GetTex(this.tex).pattern(ctx, this.texcolor);
       ctx.fill();
-    } 
+    }
+    ctx.lineWidth=2;
+    ctx.stroke();
     ctx.translate(-tx,-ty);
   }
 
@@ -227,8 +234,9 @@ class SensorBox extends GameObject {
 
   editableProperties() {
     return new PropertyEditor(this)
-      .AddProperty(new ColorProperty(" Color", "fillColor"))
+      .AddProperty(new ColorProperty("Color", "fillColor"))
       .AddProperty(new ColorProperty("Texture Color", "texcolor"))
+      .AddProperty(new ColorProperty("Stroke Color", "strokeColor"))
       .AddProperty(new BoolProperty(" Collision On/Off", "collision_on"))
       .AddProperty(new TexProperty("Texture", "tex"));
   }

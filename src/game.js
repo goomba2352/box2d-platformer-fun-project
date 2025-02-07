@@ -19,9 +19,12 @@ function initGame() {
   world.SetContactListener(new ContactListener());
 
   player = new Player(640, 500, 30, 30); 
-  object_box = new ObjectBox(500,700,30,30);
-  loadPlatforms("eyJ4IjoyOSwieSI6NDQ2LjUsInciOjI4LCJoIjo3MTMsImZpbGxDb2xvciI6IiNlMjg1MDcifQ==;eyJ4IjoyNjUsInkiOjgxOCwidyI6MjQsImgiOjE1NiwiZmlsbENvbG9yIjoiIzNjZDhiNiJ9;eyJ4Ijo3NzUuNSwieSI6NDE3LCJ3IjoyNywiaCI6NzcwLCJmaWxsQ29sb3IiOiIjY2JiOTZlIn0=;eyJ4IjozNDQuNSwieSI6ODExLjUsInciOjQxLCJoIjoxMDMsImZpbGxDb2xvciI6IiMyMjdlM2IifQ==;eyJ4Ijo0MDAsInkiOjgwMCwidyI6ODAwLCJoIjozMCwiZmlsbENvbG9yIjoiIzE5YzAyOSJ9;eyJ4IjoxMzguNSwieSI6NzcyLjUsInciOjEyMSwiaCI6MjMzLCJmaWxsQ29sb3IiOiIjYzExMDVlIn0=;eyJ4IjozNTEsInkiOjg3NCwidyI6NzAyLCJoIjoxMzYsImZpbGxDb2xvciI6IiMxY2FiMDUifQ==;eyJ4Ijo1NjMuNSwieSI6NDA2LjUsInciOjMxLCJoIjo1MzcsImZpbGxDb2xvciI6IiMwODAifQ==;eyJ4IjozOTUsInkiOjEyLjUsInciOjc0MCwiaCI6MTMsImZpbGxDb2xvciI6IiNjNWNmMmYifQ==;eyJ4IjoyNSwieSI6NDMsInciOjIyLCJoIjo2MiwiZmlsbENvbG9yIjoiI2JkMmUwNyJ9");
+  //loadPlatforms("eyJ4IjoyOSwieSI6NDQ2LjUsInciOjI4LCJoIjo3MTMsImZpbGxDb2xvciI6IiNlMjg1MDcifQ==;eyJ4IjoyNjUsInkiOjgxOCwidyI6MjQsImgiOjE1NiwiZmlsbENvbG9yIjoiIzNjZDhiNiJ9;eyJ4Ijo3NzUuNSwieSI6NDE3LCJ3IjoyNywiaCI6NzcwLCJmaWxsQ29sb3IiOiIjY2JiOTZlIn0=;eyJ4IjozNDQuNSwieSI6ODExLjUsInciOjQxLCJoIjoxMDMsImZpbGxDb2xvciI6IiMyMjdlM2IifQ==;eyJ4Ijo0MDAsInkiOjgwMCwidyI6ODAwLCJoIjozMCwiZmlsbENvbG9yIjoiIzE5YzAyOSJ9;eyJ4IjoxMzguNSwieSI6NzcyLjUsInciOjEyMSwiaCI6MjMzLCJmaWxsQ29sb3IiOiIjYzExMDVlIn0=;eyJ4IjozNTEsInkiOjg3NCwidyI6NzAyLCJoIjoxMzYsImZpbGxDb2xvciI6IiMxY2FiMDUifQ==;eyJ4Ijo1NjMuNSwieSI6NDA2LjUsInciOjMxLCJoIjo1MzcsImZpbGxDb2xvciI6IiMwODAifQ==;eyJ4IjozOTUsInkiOjEyLjUsInciOjc0MCwiaCI6MTMsImZpbGxDb2xvciI6IiNjNWNmMmYifQ==;eyJ4IjoyNSwieSI6NDMsInciOjIyLCJoIjo2MiwiZmlsbENvbG9yIjoiI2JkMmUwNyJ9");
+  loadPlatforms("eyJwIjpbImV5SjRJam8wTVRZc0lua2lPalF4Tml3aWR5STZOelV5TENKb0lqbzNPRFFzSW1acGJHeERiMnh2Y2lJNklpTmpNMkl4T1RJaUxDSnpJam9pSXpBd01EQXdNQ0lzSW5RaU9qRXNJblJqSWpvaUkyVXdaRFE1WVNJc0ltTWlPbVpoYkhObGZRPT0iLCJleUo0SWpvek1pd2llU0k2TkRRNExDSjNJam96TWl3aWFDSTZOekl3TENKbWFXeHNRMjlzYjNJaU9pSWpaVEk0TlRBM0lpd2ljeUk2SWlNd01EQXdNREFpTENKMElqb3RNU3dpZEdNaU9pSWpNREF3TURBd0lpd2lZeUk2ZEhKMVpYMD0iLCJleUo0SWpveU56SXNJbmtpT2pnek1pd2lkeUk2TXpJc0ltZ2lPakUyTUN3aVptbHNiRU52Ykc5eUlqb2lJek5qWkRoaU5pSXNJbk1pT2lJak1EQXdNREF3SWl3aWRDSTZMVEVzSW5Saklqb2lJekF3TURBd01DSXNJbU1pT25SeWRXVjkiLCJleUo0SWpvek5USXNJbmtpT2pneE5pd2lkeUk2TkRnc0ltZ2lPakV4TWl3aVptbHNiRU52Ykc5eUlqb2lJekl5TjJVellpSXNJbk1pT2lJak1EQXdNREF3SWl3aWRDSTZMVEVzSW5Saklqb2lJekF3TURBd01DSXNJbU1pT25SeWRXVjkiLCJleUo0SWpvME1EQXNJbmtpT2pnd01Dd2lkeUk2T0RBd0xDSm9Jam96TWl3aVptbHNiRU52Ykc5eUlqb2lJMkpsT1RjNU55SXNJbk1pT2lJak5ETXpNak15SWl3aWRDSTZNQ3dpZEdNaU9pSWpaR0pqTjJNM0lpd2lZeUk2ZEhKMVpYMD0iLCJleUo0SWpvM09EUXNJbmtpT2pRek1pd2lkeUk2TXpJc0ltZ2lPamM0TkN3aVptbHNiRU52Ykc5eUlqb2lJMk5pWWprMlpTSXNJbk1pT2lJak1EQXdNREF3SWl3aWRDSTZMVEVzSW5Saklqb2lJekF3TURBd01DSXNJbU1pT25SeWRXVjkiLCJleUo0SWpveE5EUXNJbmtpT2pjNE5Dd2lkeUk2TVRJNExDSm9Jam95TkRBc0ltWnBiR3hEYjJ4dmNpSTZJaU5qTVRFd05XVWlMQ0p6SWpvaUl6QXdNREF3TUNJc0luUWlPaTB4TENKMFl5STZJaU13TURBd01EQWlMQ0pqSWpwMGNuVmxmUT09IiwiZXlKNElqbzFOellzSW5raU9qUXhOaXdpZHlJNk16SXNJbWdpT2pVME5Dd2labWxzYkVOdmJHOXlJam9pTURBNE1EQXdJaXdpY3lJNklpTXdNREF3TURBaUxDSjBJam90TVN3aWRHTWlPaUlqTURBd01EQXdJaXdpWXlJNmRISjFaWDA9IiwiZXlKNElqb3pOVElzSW5raU9qZzRNQ3dpZHlJNk56QTBMQ0pvSWpveE5EUXNJbVpwYkd4RGIyeHZjaUk2SWlNeFkyRmlNRFVpTENKeklqb2lJekF3TURBd01DSXNJblFpT2kweExDSjBZeUk2SWlNd01EQXdNREFpTENKaklqcDBjblZsZlE9PSIsImV5SjRJam8wTURBc0lua2lPakUyTENKM0lqbzNOVElzSW1naU9qRTJMQ0ptYVd4c1EyOXNiM0lpT2lJall6VmpaakptSWl3aWN5STZJaU13TURBd01EQWlMQ0owSWpvdE1Td2lkR01pT2lJak1EQXdNREF3SWl3aVl5STZkSEoxWlgwPSIsImV5SjRJam96TWl3aWVTSTZORGdzSW5jaU9qTXlMQ0pvSWpvMk5Dd2labWxzYkVOdmJHOXlJam9pSTJKa01tVXdOeUlzSW5NaU9pSWpNREF3TURBd0lpd2lkQ0k2TFRFc0luUmpJam9pSXpBd01EQXdNQ0lzSW1NaU9uUnlkV1Y5Il0sInQiOiJleUowSWpwYkltVjVTbWxKYW05cFVWWkdSbEZwT1RSUlZrWkdWVVJuT1VscGQybGplVWsyVDBnd1BTSXNJbVY1U21sSmFtOXBURE5rUjA5V1dsZFdiRnB0VlZWVk9VbHBkMmxqZVVrMlQwZ3dQU0lzSW1WNVNtbEphbTlwVkZod1VWUlljRVZVV0hBMlZGaGpPVWxwZDJsamVVazJUMGd3UFNJc0ltVjVTbWxKYW05cFZGaHdVVlJZY0VWVVdIQTJWRmhqT1VscGQybGplVWsyVDBnd1BTSXNJbVY1U21sSmFtOXBWRmh3VVZSWWNFVlVXSEEyVkZoak9VbHBkMmxqZVVrMlQwZ3dQU0lzSW1WNVNtbEphbTlwVkZod1VWUlljRVZVV0hBMlZGaGpPVWxwZDJsamVVazJUMGd3UFNJc0ltVjVTbWxKYW05cFZGaHdVVlJZY0VWVVdIQTJWRmhqT1VscGQybGplVWsyVDBnd1BTSXNJbVY1U21sSmFtOXBWRmh3VVZSWWNFVlVXSEEyVkZoak9VbHBkMmxqZVVrMlQwZ3dQU0lzSW1WNVNtbEphbTlwVkZod1VWUlljRVZVV0hBMlZGaGpPVWxwZDJsamVVazJUMGd3UFNJc0ltVjVTbWxKYW05cFZGaHdVVlJZY0VWVVdIQTJWRmhqT1VscGQybGplVWsyVDBnd1BTSXNJbVY1U21sSmFtOXBWRmh3VVZSWWNFVlVXSEEyVkZoak9VbHBkMmxqZVVrMlQwZ3dQU0pkZlE9PSIsIm8iOjJ9");
   // Start the animation loop
+
+  // TODO: Serialize these:
+  object_box = new ObjectBox(500,700,30,30);
   animate();
 }
 
@@ -115,13 +118,17 @@ class ContactListener extends b2.JSContactListener {
 
 
 function savePlatforms() {
-  return entity_manager
+  let platforms = entity_manager
     .drawables
     .values()
     .filter(d => d.target instanceof Platform)
     .map(d => d.target.serialize())
-    .toArray()
-    .join(";")
+    .toArray();
+  return btoa(JSON.stringify({
+    p: platforms,
+    t: tex_manager.serialize(),
+    o: entity_manager.PlayerOrder()
+  }));
 }
 
 function loadPlatforms(str) {
@@ -133,9 +140,13 @@ function loadPlatforms(str) {
   entity_manager._cleanup_now();
 
   // Deserialize the ones created by savePlatforms
-  let platformStrings = str.split(";");
-  for (let i = 0; i < platformStrings.length; i++) {
-    Platform.deserialize(platformStrings[i]);
+  const data = JSON.parse(atob(str));
+  for (let i = 0; i < data.p.length; i++) {
+    Platform.deserialize(data.p[i]);
+  }
+  tex_manager.deserialize(data.t);
+  for (let i = 0; i < data.o; i++) {
+    entity_manager.OrderHigher(player.__removekey);
   }
 
 }
@@ -163,14 +174,14 @@ let isDrawingPlatform = false;
 canvas.addEventListener('mousedown', function (event) {
   if (event.button != 0) return;
   isDrawingPlatform = true;
-  startDrawX = event.clientX + camera.dx();
-  startDrawY = event.clientY + camera.dy();
+  startDrawX = grid(event.clientX + camera.dx(),16);
+  startDrawY = grid(event.clientY + camera.dy(),16);
 });
 
 canvas.addEventListener('mousemove', function (event) {
   if (!isDrawingPlatform) return;
-  let endDrawX = event.clientX + camera.dx();
-  let endDrawY = event.clientY + camera.dy();
+  let endDrawX = grid(event.clientX + camera.dx(),16);
+  let endDrawY = grid(event.clientY + camera.dy(),16);
 
   // Remove the previous platform
   if (new_pl != null) {
