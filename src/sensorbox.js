@@ -51,6 +51,7 @@ class SensorBox extends GameObject {
     bodyDef.set_allowSleep(false);
     this.body = world.CreateBody(bodyDef);
     this.tex=-1;
+    this.texcolor="#000000";
 
     this.center = new b2.b2PolygonShape();
     this.center.SetAsBox(w / (2 * UNITS), h / (2 * UNITS));
@@ -159,7 +160,7 @@ class SensorBox extends GameObject {
     ctx.fillStyle = this.fillColor;
     ctx.fill();
     if (this.tex >= 0) {
-      ctx.fillStyle = tex_manager.GetTex(this.tex).pattern(ctx);
+      ctx.fillStyle = tex_manager.GetTex(this.tex).pattern(ctx, this.texcolor);
       ctx.fill();
     } 
     ctx.translate(-tx,-ty);
@@ -227,6 +228,7 @@ class SensorBox extends GameObject {
   editableProperties() {
     return new PropertyEditor(this)
       .AddProperty(new ColorProperty(" Color", "fillColor"))
+      .AddProperty(new ColorProperty("Texture Color", "texcolor"))
       .AddProperty(new BoolProperty(" Collision On/Off", "collision_on"))
       .AddProperty(new TexProperty("Texture", "tex"));
   }

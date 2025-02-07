@@ -380,9 +380,7 @@ class TexEditor {
     }
     pixelEditor.addEventListener("mouseup", this.removeMe);
     document.addEventListener("mouseup", this.removeMe)
-    let propertyEditor = new PropertyEditor(tex_manager.GetTex(tex)).AddProperty(new ColorProperty("Alt Color", "_color"))
     div.appendChild(pixelEditor);
-    div.appendChild(propertyEditor.Render());
     document.body.appendChild(div);
   }
 }

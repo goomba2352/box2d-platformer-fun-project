@@ -172,14 +172,12 @@ class EntityManager {
 
 class Tex {
   _canvas;
-  _pattern;
-  _update;
   _bits;
-  _color;
+  _available_colors = new Map();
   constructor(color) {
     this._canvas = document.createElement("canvas");
-    this._canvas.width=8;
-    this._canvas.height=8;
+    this._canvas.width=16;
+    this._canvas.height=16;
     this._bits = new Uint8Array(8);
     this._bits[0]=0b00110011;
     this._bits[1]=0b00110011;
@@ -189,7 +187,6 @@ class Tex {
     this._bits[5]=0b00110011;
     this._bits[6]=0b11001100;
     this._bits[7]=0b11001100;
-    this._update = true;
     this._color = color;
   }
 
@@ -202,27 +199,26 @@ class Tex {
   }
 
   markUpdated() {
-    this._update = true;
+    this._available_colors = new Map();
   }
 
   pattern(ctx, color) {
-    if (this._update) {
+    if (!this._available_colors.has(color)) {
       let context = this.context();
-      context.clearRect(0,0,8,8);
+      context.clearRect(0,0,16,16);
       for (let row = 0; row < 8; ++row) {
         for (let col = 0; col < 8; ++col) {
           if ((this._bits[row] >> col) & 1) {
-            context.fillStyle = this._color;
+            context.fillStyle = color;
           } else {
             context.fillStyle = "#00000000";
           }
-          context.fillRect(col, row, 1, 1);
+          context.fillRect(2*col, 2*row, 2, 2);
         }
       }
-      this._pattern = ctx.createPattern(this._canvas, "repeat");
-      this._update = false;
+      this._available_colors.set(color, ctx.createPattern(this._canvas, "repeat"));
     }
-    return this._pattern;
+    return this._available_colors.get(color);
   }
 }
 
