@@ -23,6 +23,8 @@ class SensorInfo extends Collidable {
 }
 
 class GameObject extends Collidable {
+  static SELECTED_FILL_COLOR="#FFFF00";
+  selected = false;
   destroy() {}
 
   editableProperties() { return new PropertyEditor(this); }
@@ -45,8 +47,8 @@ class SensorBox extends GameObject {
     super();
     w=grid(w,16);
     h=grid(h,16);
-    x=grid(x,16);
-    y=grid(y,16);
+    x=x;
+    y=y;
     this.side = SensorBox.SELF;
     this.parent = this;
     // Create player body definition
@@ -161,7 +163,7 @@ class SensorBox extends GameObject {
     }
 
     // Draw the outline
-    ctx.strokeStyle = this.strokeColor;
+    ctx.strokeStyle = this.selected ? GameObject.SELECTED_FILL_COLOR :this.strokeColor;
     ctx.fillStyle = this.fillColor;
     ctx.fill();
     if (this.tex >= 0) {

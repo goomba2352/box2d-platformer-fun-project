@@ -104,6 +104,10 @@ class GUIWindow {
   }
 }
 
+class SelectionWindow {
+  
+}
+
 class ObjectWindow {
   constructor() {
     this.div = document.createElement("div");

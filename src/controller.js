@@ -3,6 +3,7 @@ class Controller {
   static LEFT = "ArrowLeft";
   static RIGHT = "ArrowRight";
   static SPACE = " ";
+  static SHIFT = "Shift"
 
   constructor() {
     this._keys_down = new Set();
@@ -33,6 +34,10 @@ class Controller {
 
   jump() {
     return this._keys_held.has(Controller.SPACE);
+  }
+
+  shift() {
+    return this._keys_held.has(Controller.SHIFT);
   }
 
   jumpPressed() {

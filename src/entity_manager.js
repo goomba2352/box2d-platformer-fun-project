@@ -281,6 +281,33 @@ class TexManager {
   }
 }
 
+class SerializableProperty {
+  serialize() {
+    return btoa(JSON.stringify(this));
+  }
+
+  from(serializedString) {
+    const data = JSON.parse(atob(serializedString));
+    console.log(data);  
+    for (let k of Object.keys(data)) {
+      this[k] = data[k];
+    }
+    return this;
+  }
+  
+  static deserialize(serializedString) {
+    let x = new SerializableProperty();
+    return x.from(serializedString);
+  }
+}
+
+class RenderProperty extends SerializableProperty {
+  fc = "#FFFFFF"
+  sc = "#000000"
+  tc = "#000000"
+  t = -1;
+}
+
 var entity_manager = new EntityManager();
 var tex_manager = new TexManager();
 var tex0 = tex_manager.CreateTex(8);
