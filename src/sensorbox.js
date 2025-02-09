@@ -157,6 +157,7 @@ class SensorBox extends GameObject {
     let tx = this.body.GetPosition().get_x() * UNITS;
     let ty = this.body.GetPosition().get_y() * UNITS;
     ctx.translate(tx, ty);
+    ctx.rotate(this.body.GetAngle());
 
     // Draw the polygon using the vertices
     ctx.beginPath();
@@ -178,6 +179,7 @@ class SensorBox extends GameObject {
     }
     ctx.lineWidth = 2;
     ctx.stroke();
+    ctx.rotate(-this.body.GetAngle());
     ctx.translate(-tx, -ty);
   }
 
