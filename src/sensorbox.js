@@ -2,14 +2,14 @@ class Collidable {
   side;
   parent;
   id;
-  collision_on=true;
+  collision_on = true;
 }
 
 class SensorInfo extends Collidable {
   side;
   parent;
   id;
-  collision_on=false;
+  collision_on = false;
 
   constructor(side, parent, id) {
     super();
@@ -23,15 +23,21 @@ class SensorInfo extends Collidable {
 }
 
 class GameObject extends Collidable {
-  static SELECTED_FILL_COLOR="#FFFF00";
+  static SELECTED_FILL_COLOR = "#FFFF00";
   selected = false;
-  destroy() {}
+  destroy() { }
 
   editableProperties() { return new PropertyEditor(this); }
 
-  updatePropertyCallback(prop) {}
+  updatePropertyCallback(prop) { }
 
   containsMouse(mx, my) { return false; }
+
+  l() { }
+  r() { }
+  u() { }
+  d() { }
+  translate(x, y) { }
 }
 
 class SensorBox extends GameObject {
@@ -45,10 +51,10 @@ class SensorBox extends GameObject {
 
   constructor(x, y, w, h) {
     super();
-    w=grid(w,16);
-    h=grid(h,16);
-    x=x;
-    y=y;
+    w = grid(w, 16);
+    h = grid(h, 16);
+    x = x;
+    y = y;
     this.side = SensorBox.SELF;
     this.parent = this;
     // Create player body definition
@@ -56,9 +62,9 @@ class SensorBox extends GameObject {
     bodyDef.set_type(b2.b2_staticBody);
     bodyDef.set_allowSleep(false);
     this.body = world.CreateBody(bodyDef);
-    this.tex=-1;
-    this.texcolor="#000000";
-    this.strokeColor='#000000';
+    this.tex = -1;
+    this.texcolor = "#000000";
+    this.strokeColor = '#000000';
 
     this.center = new b2.b2PolygonShape();
     this.center.SetAsBox(w / (2 * UNITS), h / (2 * UNITS));
@@ -69,7 +75,7 @@ class SensorBox extends GameObject {
     let f = this.body.CreateFixture(centerDef);
     this.fixture = f;
     this.id = f.a;
-    this.child_ids=[];
+    this.child_ids = [];
     this.body.SetTransform(new b2.b2Vec2(x / UNITS, y / UNITS), 0)
 
 
@@ -87,11 +93,11 @@ class SensorBox extends GameObject {
     this.sensor_map.set(4, new Set());
     this.sensor_map.set(8, new Set());
     this.sensor_map.set(16, new Set());
-    this.x=x;
-    this.y=y;
-    this.w=w;
-    this.h=h;
-    this.fillColor="#333";
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
+    this.fillColor = "#333";
     this.collisions_to_handle = [];
   }
 
@@ -116,7 +122,7 @@ class SensorBox extends GameObject {
     } else {
       this.sensor_map.get(side).delete(other);
     }
-    if (side==SensorBox.SELF) { this.collisions_to_handle.push([type, other]) }
+    if (side == SensorBox.SELF) { this.collisions_to_handle.push([type, other]) }
   }
 
   HandleCollision(type, other) { }
@@ -150,7 +156,7 @@ class SensorBox extends GameObject {
 
     let tx = this.body.GetPosition().get_x() * UNITS;
     let ty = this.body.GetPosition().get_y() * UNITS;
-    ctx.translate(tx,ty);
+    ctx.translate(tx, ty);
 
     // Draw the polygon using the vertices
     ctx.beginPath();
@@ -163,29 +169,29 @@ class SensorBox extends GameObject {
     }
 
     // Draw the outline
-    ctx.strokeStyle = this.selected ? GameObject.SELECTED_FILL_COLOR :this.strokeColor;
+    ctx.strokeStyle = this.selected ? GameObject.SELECTED_FILL_COLOR : this.strokeColor;
     ctx.fillStyle = this.fillColor;
     ctx.fill();
     if (this.tex >= 0) {
       ctx.fillStyle = tex_manager.GetTex(this.tex).pattern(ctx, this.texcolor);
       ctx.fill();
     }
-    ctx.lineWidth=2;
+    ctx.lineWidth = 2;
     ctx.stroke();
-    ctx.translate(-tx,-ty);
+    ctx.translate(-tx, -ty);
   }
 
   destroy() {
     world.DestroyBody(this.body);
     for (let id of this.child_ids) {
-      if (!entity_manager.RemoveById(id)) {}
+      if (!entity_manager.RemoveById(id)) { }
     }
     entity_manager.Remove(this);
   }
 
   containsMouse(mx, my) {
-    mx+=camera.dx();
-    my+=camera.dy();
+    mx += camera.dx();
+    my += camera.dy();
     const vertices = [];
     for (let i = 0; i < this.center.GetVertexCount(); i++) {
       const v = this.center.GetVertex(i);
@@ -218,18 +224,18 @@ class SensorBox extends GameObject {
   debuginfo() {
     let result = "Sensor Map:\n";
     const sensors = {
-        Left: SensorBox.LEFT,
-        Right: SensorBox.RIGHT,
-        Top: SensorBox.TOP,
-        Bottom: SensorBox.BOTTOM,
-        Self: SensorBox.SELF
+      Left: SensorBox.LEFT,
+      Right: SensorBox.RIGHT,
+      Top: SensorBox.TOP,
+      Bottom: SensorBox.BOTTOM,
+      Self: SensorBox.SELF
     };
-    
+
     for (const [key, value] of Object.entries(sensors)) {
-        if (this.sensor_map.has(value)) {
-            const entries = Array.from(this.sensor_map.get(value)).map(entity => entity.constructor.name);
-            result += `${key}: ${entries.join(', ')}\n`;
-        }
+      if (this.sensor_map.has(value)) {
+        const entries = Array.from(this.sensor_map.get(value)).map(entity => entity.constructor.name);
+        result += `${key}: ${entries.join(', ')}\n`;
+      }
     }
     return result;
   }
@@ -241,5 +247,24 @@ class SensorBox extends GameObject {
       .AddProperty(new ColorProperty("Stroke Color", "strokeColor"))
       .AddProperty(new BoolProperty(" Collision On/Off", "collision_on"))
       .AddProperty(new TexProperty("Texture", "tex"));
+  }
+
+  static MOVE_BY = 8;
+
+  l() {
+    this.translate(-SensorBox.MOVE_BY / UNITS, 0);
+  }
+  r() {
+    this.translate(SensorBox.MOVE_BY / UNITS, 0);
+  }
+  u() {
+    this.translate(0, -SensorBox.MOVE_BY / UNITS);
+  }
+  d() {
+    this.translate(0, SensorBox.MOVE_BY / UNITS);
+  }
+  translate(dx, dy) {
+    let t = this.body.GetPosition();
+    this.body.SetTransform(v2(t.get_x() + dx, t.get_y() + dy));
   }
 }

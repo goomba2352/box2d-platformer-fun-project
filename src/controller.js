@@ -1,5 +1,7 @@
 class Controller {
 
+  static DOWN = "ArrowDown";
+  static UP = "ArrowUp";
   static LEFT = "ArrowLeft";
   static RIGHT = "ArrowRight";
   static SPACE = " ";
@@ -30,6 +32,10 @@ class Controller {
 
   right() {
     return this._keys_held.has(Controller.RIGHT);
+  }
+
+  pressed(key) {
+    return this._keys_down.has(key);
   }
 
   jump() {
