@@ -76,7 +76,7 @@ class SensorBox extends GameObject {
     this.fixture = f;
     this.id = f.a;
     this.child_ids = [];
-    this.body.SetTransform(new b2.b2Vec2(x / UNITS, y / UNITS), 0)
+    this.body.SetTransform(v2(x / UNITS, y / UNITS), 0)
 
 
     // Create sensor shapes for each direction
@@ -265,6 +265,6 @@ class SensorBox extends GameObject {
   }
   translate(dx, dy) {
     let t = this.body.GetPosition();
-    this.body.SetTransform(v2(t.get_x() + dx, t.get_y() + dy));
+    this.body.SetTransform(v2(t.get_x() + dx, t.get_y() + dy), 0);
   }
 }
