@@ -5,6 +5,7 @@ var global_speed=2;
 var object_box;
 var frame = 0;
 var debug_collisions=false;
+var moveMode = document.getElementById("moveModeImage")
 
 function initGame() {
   // Initialize your game here, e.g., create a new Box2D world
@@ -56,6 +57,13 @@ function updateGame() {
       for (let o of selected) {
         o.d();
       }
+    }
+    if (controller.pressed(Controller.DELETE)) {
+      for (let o of selected) {
+        o.destroy();
+      }
+      selected = [];
+      moveMode.style.display="none";
     }
   } else {
     if (controller.jump()) {
@@ -205,6 +213,7 @@ canvas.addEventListener('mousedown', function (event) {
 });
 
 canvas.addEventListener('mousemove', function (event) {
+  mouseMoved=true;
   let mx = event.clientX + camera.dx();
   let my = event.clientY + camera.dy();
   if (!isDrawingPlatform) return;
@@ -249,11 +258,13 @@ canvas.addEventListener('mouseup', function (event) {
       if (!controller.shift()) {
         for (let o of selected) {
           o.selected = false;
+          moveMode.style.display="none";
           selected = [];
         }
       }
       if (!wasinselected) {
         selected.push(lastObject);
+        moveMode.style.display="";
         lastObject.selected = true;
       } else {
         lastObject.selected = false;
@@ -263,6 +274,7 @@ canvas.addEventListener('mouseup', function (event) {
       for (let o of selected) {
         o.selected = false;
       }
+      moveMode.style.display="none";
       selected = [];
     }
   }

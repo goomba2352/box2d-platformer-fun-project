@@ -6,6 +6,7 @@ class Controller {
   static RIGHT = "ArrowRight";
   static SPACE = " ";
   static SHIFT = "Shift"
+  static DELETE = "Delete";
 
   constructor() {
     this._keys_down = new Set();

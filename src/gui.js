@@ -175,6 +175,13 @@ class ColorProperty extends AbstractProperty {
     label.htmlFor = input.id;
     base.appendChild(input);
     base.appendChild(label);
+    let button = document.createElement("button");
+    button.onclick = (e) => {
+      this.value="#00000000";
+      this._Update(e);
+    }
+    button.innerText = "Hide";
+    base.appendChild(button);
 
     return base;
   }
