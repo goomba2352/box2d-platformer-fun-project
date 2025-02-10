@@ -177,6 +177,10 @@ class SensorBox extends GameObject {
       ctx.fillStyle = tex_manager.GetTex(this.tex).pattern(ctx, this.texcolor);
       ctx.fill();
     }
+    if (this.selected) {
+      ctx.fillStyle = selectTex.pattern(ctx, GameObject.SELECTED_FILL_COLOR);
+      ctx.fill();
+    }
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.rotate(-this.body.GetAngle());

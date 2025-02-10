@@ -65,6 +65,13 @@ function updateGame() {
       selected = [];
       moveMode.style.display="none";
     }
+    if (controller.pressed(Controller.ESCAPE)) {
+      for (let o of selected) {
+        o.selected = false;
+      }
+      selected = [];
+      moveMode.style.display="none";
+    }
   } else {
     if (controller.jump()) {
       player.jump();

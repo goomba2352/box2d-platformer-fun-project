@@ -7,6 +7,7 @@ class Controller {
   static SPACE = " ";
   static SHIFT = "Shift"
   static DELETE = "Delete";
+  static ESCAPE = "Escape";
 
   constructor() {
     this._keys_down = new Set();

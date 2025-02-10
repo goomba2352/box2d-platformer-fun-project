@@ -315,3 +315,4 @@ for (let i = 0; i < 10; i++) {
   tex_manager.CreateTex(8);
 }
 tex0.markUpdated();
+var selectTex = new Tex(8);
