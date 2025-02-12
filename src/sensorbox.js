@@ -57,14 +57,32 @@ class SensorBox extends GameObject {
     y = y;
     this.side = SensorBox.SELF;
     this.parent = this;
+    this._CreateBody(x, y, w, h);
+    this.collisions_to_handle = [];
+  }
+
+  _CreateBody(x, y, w, h) {
+    let update = this.body != null;
+    let idsToUpdate = [];
+    let newIds = [];
+    if (!update) {
+      this.tex = -1;
+      this.fillColor = "#333333";
+      this.texcolor = "#000000";
+      this.strokeColor = '#000000';
+    } else {
+      idsToUpdate.push(this.id);
+      for (let id of this.child_ids) {
+        idsToUpdate.push(id);
+      }
+      world.DestroyBody(this.body);
+    }
     // Create player body definition
     const bodyDef = new b2.b2BodyDef();
     bodyDef.set_type(b2.b2_staticBody);
     bodyDef.set_allowSleep(false);
     this.body = world.CreateBody(bodyDef);
-    this.tex = -1;
-    this.texcolor = "#000000";
-    this.strokeColor = '#000000';
+
 
     this.center = new b2.b2PolygonShape();
     this.center.SetAsBox(w / (2 * UNITS), h / (2 * UNITS));
@@ -75,6 +93,7 @@ class SensorBox extends GameObject {
     let f = this.body.CreateFixture(centerDef);
     this.fixture = f;
     this.id = f.a;
+    newIds.push(this.id);
     this.child_ids = [];
     this.body.SetTransform(v2(x / UNITS, y / UNITS), 0)
 
@@ -85,20 +104,31 @@ class SensorBox extends GameObject {
     this.right = this._CreateSensor(SensorBox.RIGHT, w / (2 * UNITS) + 8 / UNITS, 0, 6 / UNITS, h / (2 * UNITS) - 0.03);
     this.top = this._CreateSensor(SensorBox.TOP, 0, -h / (2 * UNITS) - 8 / UNITS, w / (2 * UNITS) - 0.03, 6 / UNITS);
     this.bottom = this._CreateSensor(SensorBox.BOTTOM, 0, h / (2 * UNITS) + 8 / UNITS, w / (2 * UNITS) - 0.03, 6 / UNITS);
+    for (let id of this.child_ids) {
+      newIds.push(id);
+    }
 
-    entity_manager.AddDrawable(this);
+    if (!update) {
+      entity_manager.AddDrawable(this);
+    }
+    for (let i = 0; i < idsToUpdate.length; i++) {
+      entity_manager.IdUpdate(idsToUpdate[i], newIds[i]);
+    }
+    entity_manager._cleanup_now();
     this.sensor_map = new Map();
     this.sensor_map.set(1, new Set());
     this.sensor_map.set(2, new Set());
     this.sensor_map.set(4, new Set());
     this.sensor_map.set(8, new Set());
     this.sensor_map.set(16, new Set());
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
-    this.fillColor = "#333";
-    this.collisions_to_handle = [];
+    this._w = w;
+    this._h = h;
+    this.updatePropertyCallback("collision_on", this.collision_on);
+    this.CreateBodyExtension();
+  }
+
+  CreateBodyExtension() {
+
   }
 
   _CreateSensor(side, x, y, w, h) {
@@ -129,10 +159,10 @@ class SensorBox extends GameObject {
 
   draw(ctx) {
     this.draw_rect_shape(this.center, ctx);
-    // this.draw_rect_shape(this.left, ctx, '#990');
-    // this.draw_rect_shape(this.right, ctx, '#990');
-    // this.draw_rect_shape(this.top, ctx, '#990');
-    // this.draw_rect_shape(this.bottom, ctx, '#990');
+    // this.draw_rect_shape(this.left, ctx);
+    // this.draw_rect_shape(this.right, ctx);
+    // this.draw_rect_shape(this.top, ctx);
+    // this.draw_rect_shape(this.bottom, ctx);
   }
 
   _update(dt) {
@@ -187,12 +217,14 @@ class SensorBox extends GameObject {
     ctx.translate(-tx, -ty);
   }
 
-  destroy() {
+  destroy(removeThis = true) {
     world.DestroyBody(this.body);
     for (let id of this.child_ids) {
       if (!entity_manager.RemoveById(id)) { }
     }
-    entity_manager.Remove(this);
+    if (removeThis) {
+      entity_manager.Remove(this);
+    }
   }
 
   containsMouse(mx, my) {
@@ -239,7 +271,7 @@ class SensorBox extends GameObject {
 
     for (const [key, value] of Object.entries(sensors)) {
       if (this.sensor_map.has(value)) {
-        const entries = Array.from(this.sensor_map.get(value)).map(entity => entity.constructor.name);
+        const entries = Array.from(this.sensor_map.get(value)).map(entity => entity == null ? "NULL!" : entity.constructor.name);
         result += `${key}: ${entries.join(', ')}\n`;
       }
     }
@@ -257,6 +289,20 @@ class SensorBox extends GameObject {
 
   static MOVE_BY = 8;
 
+  w() {
+    return this._w;
+  }
+  h() {
+    return this._h;
+  }
+  x() {
+    return this.body.GetPosition().get_x() * UNITS;
+  }
+
+  y() {
+    return this.body.GetPosition().get_y() * UNITS;
+  }
+
   l() {
     this.translate(-SensorBox.MOVE_BY / UNITS, 0);
   }
@@ -265,10 +311,19 @@ class SensorBox extends GameObject {
   }
   u() {
     this.translate(0, -SensorBox.MOVE_BY / UNITS);
-  }
+  } this
   d() {
     this.translate(0, SensorBox.MOVE_BY / UNITS);
   }
+
+  deltawidth(dw) {
+    this._CreateBody(this.x(), this.y(), this.w() + dw, this.h());
+  }
+
+  deltaheight(dh) {
+    this._CreateBody(this.x(), this.y(), this.w(), this.h() + dh);
+  }
+
   translate(dx, dy) {
     let t = this.body.GetPosition();
     this.body.SetTransform(v2(t.get_x() + dx, t.get_y() + dy), 0);

@@ -58,11 +58,18 @@ class EntityManager {
   constructor() {
     this.es = new Map();
     this.drawables = new Set();
-    this.to_remove = []
+    this.to_remove = [];
+    this.new_id = new Set();
   }
 
   Add(e) {
     return this.es.set(e.id, e);
+  }
+
+  IdUpdate(oldId, newId) {
+    this.es.set(newId, this.es.get(oldId));
+    this.to_remove.push(oldId);
+    this.new_id.add(newId);
   }
 
   AddDrawable(e) {
@@ -173,11 +180,13 @@ class EntityManager {
 
   _update() {
     for (id of this.to_remove) {
+      if (this.new_id.has(id)) { continue; }
       let e = this.es.get(id);
       this.es.delete(id);
       this.drawables.delete(e.__removekey);
     }
     this.to_remove = [];
+    this.new_id.clear();
   }
 }
 

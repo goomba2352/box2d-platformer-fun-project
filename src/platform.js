@@ -7,10 +7,10 @@ class Platform extends SensorBox {
 
   serialize() {
     return btoa(JSON.stringify({
-      x: this.x,
-      y: this.y,
-      w: this.w,
-      h: this.h, 
+      x: this.x(),
+      y: this.y(),
+      w: this.w(),
+      h: this.h(), 
       fillColor: this.fillColor,
       s: this.strokeColor,
       t:this.tex,

@@ -4,11 +4,14 @@ class Player extends SensorBox {
 
   constructor(x, y, w, h) {
     super(x, y, w, h);
+    this.CreateBodyExtension();
+  }
+
+  CreateBodyExtension() {
     this.body.SetType(b2.b2_dynamicBody);
     this.body.SetSleepingAllowed(false);
     this.movementState = new FallingState(this);
   }
-
   vx() {
     return this.body.GetLinearVelocity().get_x();
   }
@@ -49,51 +52,51 @@ class Player extends SensorBox {
       this.velocityHistory.shift(); // remove the oldest record
     }
     this.velocityHistory.push(currentVelocity);
-    this.movementState.update(player, dt);
+    this.movementState.update(this, dt);
   }
 }
 
 class MovementState {
-  StopableCollision(side) {
-    for (let entry of player.sensor_map.get(side)) {
+  StopableCollision(p, side) {
+    for (let entry of p.sensor_map.get(side)) {
       if (entry instanceof Collidable && entry.collision_on) {
         return true;
       }
     }
     return false;
   }
-  left(player) {
-    if (player.vx() < -Player.MAX_VELOCITY) return;
-    player.body.ApplyForce(v2(-10, 0), player.position());
+  left(p) {
+    if (p.vx() < -Player.MAX_VELOCITY) return;
+    p.body.ApplyForce(v2(-10, 0), p.position());
   }
 
-  right(player) {
-    if (player.vx() > Player.MAX_VELOCITY) return;
-    player.body.ApplyForce(v2(10, 0), player.position());
+  right(p) {
+    if (p.vx() > Player.MAX_VELOCITY) return;
+    p.body.ApplyForce(v2(10, 0), p.position());
   }
 
-  jump(player) {
+  jump(p) {
 
   }
 
-  update(player, dt) { }
+  update(p, dt) { }
 }
 
 class GroundState extends MovementState {
-  constructor(player) {
+  constructor(p) {
     super();
-    player.body.SetGravityScale(1);
-    player.fillColor = "#333";
+    p.body.SetGravityScale(1);
+    p.fillColor = "#333";
   }
-  jump(player) {
-    player.body.ApplyLinearImpulse(v2(0, -15), player.position());
-    player.movementState = new FallingState(player);
+  jump(p) {
+    p.body.ApplyLinearImpulse(v2(0, -15), p.position());
+    p.movementState = new FallingState(p);
   }
 
-  update(player, dt) {
-    const yVelocity = Math.abs(player.vy());
+  update(p, dt) {
+    const yVelocity = Math.abs(p.vy());
     if (yVelocity > 0.01) {
-      player.movementState = new FallingState(player);
+      p.movementState = new FallingState(p);
     }
   }
 }
@@ -103,21 +106,21 @@ class FallingState extends MovementState {
   timeElapsed = 0;
   pvx = 0;
 
-  constructor(player) {
+  constructor(p) {
     super();
-    player.body.SetGravityScale(1);
-    player.fillColor = "#AA4";
-    this.pvx = player.vx();
+    p.body.SetGravityScale(1);
+    p.fillColor = "#AA4";
+    this.pvx = p.vx();
   }
 
-  update(player, dt) {
-    let vx = player.vx();
-    let self_sensor = this.StopableCollision(SensorBox.SELF);
-    let left_sensor = this.StopableCollision(SensorBox.LEFT);
-    let right_sensor = this.StopableCollision(SensorBox.RIGHT);
+  update(p, dt) {
+    let vx = p.vx();
+    let self_sensor = this.StopableCollision(p, SensorBox.SELF);
+    let left_sensor = this.StopableCollision(p, SensorBox.LEFT);
+    let right_sensor = this.StopableCollision(p, SensorBox.RIGHT);
     if (((right_sensor && controller.right()) || (left_sensor && controller.left())) && self_sensor) {
       if (Math.abs(vx) < 0.1 && Math.abs(this.pvx) > 2) {
-        player.movementState = new WallJumpState(player, this.pvx);
+        p.movementState = new WallJumpState(p, this.pvx);
         return;
       }
     }
@@ -125,9 +128,9 @@ class FallingState extends MovementState {
     this.timeElapsed += dt;
     this.pvx = vx;
     if (this.timeElapsed < 0.1) { return; }
-    let bottom_sensor = this.StopableCollision(SensorBox.BOTTOM);
+    let bottom_sensor = this.StopableCollision(p, SensorBox.BOTTOM);
     if (bottom_sensor && self_sensor) {
-      player.movementState = new GroundState(player);
+      p.movementState = new GroundState(p);
       return;
     }
 
@@ -137,14 +140,14 @@ class FallingState extends MovementState {
 class WallJumpState extends MovementState {
   timeElapsed = 0;
   pvx = 0
-  constructor(player, pvx) {
+  constructor(p, pvx) {
     super();
     //player.body.SetGravityScale(0.2);
     this.pvx = pvx;
-    player.fillColor = "#A66";
+    p.fillColor = "#A66";
   }
 
-  jump() {
+  jump(p) {
     if (!controller.jumpPressed()) { return; }
     let xforce = -Math.sign(this.pvx);
     let yforce = -15;
@@ -158,31 +161,31 @@ class WallJumpState extends MovementState {
     } else {
       xforce *= 3
     }
-    player.body.ApplyLinearImpulse(v2(xforce, yforce), player.position());
-    player.movementState = new FallingState(player);
+    p.body.ApplyLinearImpulse(v2(xforce, yforce), p.position());
+    p.movementState = new FallingState(p);
   }
 
-  update(player, dt) {
+  update(p, dt) {
     this.timeElapsed += dt;
-    if (player.vy() > 4) {
-      player.body.ApplyLinearImpulse(v2(0, -2.5), player.position());
-    } else if (player.vy() > 1) {
-      player.body.ApplyLinearImpulse(v2(0, -0.8), player.position());
-    } else if (player.vy() < 1) {
-      player.body.ApplyLinearImpulse(v2(0, 0.2), player.position());
+    if (p.vy() > 4) {
+      p.body.ApplyLinearImpulse(v2(0, -2.5), p.position());
+    } else if (p.vy() > 1) {
+      p.body.ApplyLinearImpulse(v2(0, -0.8), p.position());
+    } else if (p.vy() < 1) {
+      p.body.ApplyLinearImpulse(v2(0, 0.2), p.position());
     }
     if (this.timeElapsed > 1.5) {
-      player.movementState = new FallingState(player);
+      p.movementState = new FallingState(p);
       return;
     }
-    let self_sensor = this.StopableCollision(SensorBox.SELF);
+    let self_sensor = this.StopableCollision(p, SensorBox.SELF);
     if (!self_sensor) {
-      player.movementState = new FallingState(player);
+      p.movementState = new FallingState(p);
       return;
     }
-    let bottom_sensor = this.StopableCollision(SensorBox.BOTTOM);
+    let bottom_sensor = this.StopableCollision(p, SensorBox.BOTTOM);
     if (bottom_sensor && self_sensor) {
-      player.movementState = new GroundState(player);
+      p.movementState = new GroundState(p);
       return;
     }
   }
