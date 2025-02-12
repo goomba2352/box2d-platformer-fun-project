@@ -5,8 +5,8 @@ class ObjectBox extends SensorBox {
     this.fillColor = "#886600";
     last_cir = new CircleObject(
       this.body.GetPosition().get_x() * UNITS,
-      this.body.GetPosition().get_y() * UNITS - 2 * this.h,
-      this.h / 2);
+      this.body.GetPosition().get_y() * UNITS - 2 * this.h(),
+      this.h() / 2);
   }
 }
 
