@@ -280,11 +280,12 @@ class SensorBox extends GameObject {
 
   editableProperties() {
     return new PropertyEditor(this)
-      .AddProperty(new ColorProperty("Color", "fillColor"))
-      .AddProperty(new ColorProperty("Texture Color", "texcolor"))
-      .AddProperty(new ColorProperty("Stroke Color", "strokeColor"))
-      .AddProperty(new BoolProperty(" Collision On/Off", "collision_on"))
-      .AddProperty(new TexProperty("Texture", "tex"));
+      .AddProperty(new ColorProperty("Color", "fillColor"), "Colors")
+      .AddProperty(new ColorProperty("Texture Color", "texcolor"), "Colors")
+      .AddProperty(new ColorProperty("Stroke Color", "strokeColor"), "Colors")
+      .AddProperty(new BoolProperty(" Collision On/Off", "collision_on"), "Physics")
+      .AddProperty(new TexProperty("Texture", "tex"), "Colors")
+      .AddProperty(new DestroyButton(), "Physics");
   }
 
   static MOVE_BY = 8;

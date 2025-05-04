@@ -1,8 +1,22 @@
 // Creates a new floating div.
 var pe = null;
+
+class MenuGroup {
+  div = document.createElement("div");
+  content = document.createElement("div");
+
+  constructor(name) {
+    this.name = name;
+    this.div.classList+="window";
+    this.div.setAttribute("role","tabpanel");
+    this.content.setAttribute("role", "window-body");
+    this.div.appendChild(this.content);
+  }
+}
 class GUIWindow {
 
   div = null;
+  groups = {};
   destroy() {
     pe = null;
     document.body.removeChild(this.div);
@@ -43,25 +57,39 @@ class GUIWindow {
     let contentArea = document.createElement('div');
     contentArea.classList.add("window-body");
     contentArea.style.height = (h - 30) + 'px';
-    div.appendChild(contentArea);
+    this.hasGroups = false;
+    let props = e.editableProperties().Render(this);
+    if (this.hasGroups) {
+      let menu = document.createElement("menu");
+      menu.setAttribute("role", "tablist");
+      let first = null;
+      for (let key of Object.keys(this.groups)) {
 
-    let props = e.editableProperties().Render();
-    let destroyButton = document.createElement("button");
-    let destroyButtonDiv = document.createElement("div");
-    destroyButtonDiv.classList += "field-row";
-    destroyButtonDiv.appendChild(destroyButton);
-    props.appendChild(destroyButtonDiv);
-    contentArea.appendChild(props);
-
-    destroyButton.textContent = "Destroy";
-    destroyButton.addEventListener("click", () => {
-      if (e && e.destroy) {
-        e.destroy();
-        this.destroy();
+        let tab = document.createElement("li");
+        tab.setAttribute("role", "tab");
+        tab.innerHTML="<a href=\"#tabs\">" + this.groups[key].name + "</a>"
+        tab.onclick = (e) => {
+          contentArea.removeChild(this.currentSelect);
+          contentArea.appendChild(this.groups[key].div);
+          this.currentTab.setAttribute("aria-selected", "false");
+          tab.setAttribute("aria-selected", "true");
+          this.currentTab = tab;
+          this.currentSelect = this.groups[key].div;
+        }
+        menu.appendChild(tab)
+        if (!first) {
+          first = this.groups[key];
+          tab.setAttribute("aria-selected", "true");
+          this.currentTab = tab;
+        }
       }
-    });
-
-
+      contentArea.appendChild(menu);
+      contentArea.appendChild(first.div);
+      this.currentSelect = first.div;
+    } else {
+      contentArea.appendChild(props);
+    }
+    div.appendChild(contentArea);
 
     let isDragging = false;
     let offsetX, offsetY;
@@ -184,6 +212,41 @@ class ColorProperty extends AbstractProperty {
     base.appendChild(button);
 
     return base;
+  }
+}
+
+class Button extends AbstractProperty {
+  constructor(name) {
+    super(name, null);
+  }
+  GetHTMLElement() {
+    let base = document.createElement("div");
+    let button = document.createElement("button");
+    base.classList += "field-row";
+    base.appendChild(button);
+
+    button.textContent = this.name;
+    button.addEventListener("click", () => {
+      this.OnClick();
+    });
+    return base;
+  }
+
+  _Update(e) {
+    // unused
+  }
+
+  OnClick() {}
+}
+
+class DestroyButton extends Button {
+  constructor() {
+    super("Destroy");
+  }
+
+  OnClick() {
+    this.parent_editor.parent.destroy();
+    this.parent_editor.gui.destroy();
   }
 }
 
@@ -435,7 +498,7 @@ class TexEditor {
 
     let props = new PropertyEditor(tex_manager.GetTex(tex))
       .AddProperty(new SelectProperty("Texture size", "_size", ["7x7", "8x8"], [7, 8]))
-    div.appendChild(props.Render());
+    div.appendChild(props.Render(this));
 
     document.body.appendChild(div);
   }
@@ -445,22 +508,33 @@ class TexEditor {
 class PropertyEditor {
   properties = [];
   parent = null;
+  gui = null
 
   constructor(parent) {
     this.parent = parent;
   }
 
-  AddProperty(p) {
+  AddProperty(p, group) {
     p.parent_editor = this;
+    p.group = group;
     p.value = this.parent[p.objectKey];
     this.properties.push(p);
     return this;
   }
 
-  Render() {
+  Render(gui) {
+    this.gui = gui;
     let div = document.createElement("div");
     for (let p of this.properties) {
-      div.appendChild(p.GetHTMLElement());
+      if (gui.groups && p.group) {
+        if (!gui.groups[p.group]) {
+          gui.groups[p.group] = new MenuGroup(p.group);
+        }
+        gui.groups[p.group].content.appendChild(p.GetHTMLElement());
+        gui.hasGroups = true;
+      } else {
+        div.appendChild(p.GetHTMLElement());
+      }
     }
     return div;
   }
