@@ -68,7 +68,7 @@ class GUIWindow {
 
         let tab = document.createElement("li");
         tab.setAttribute("role", "tab");
-        tab.innerHTML="<a href=\"#tabs\">" + this.groups[key].name + "</a>"
+        tab.innerHTML="<a>" + this.groups[key].name + "</a>"
         tab.onclick = (e) => {
           contentArea.removeChild(this.currentSelect);
           contentArea.appendChild(this.groups[key].div);
