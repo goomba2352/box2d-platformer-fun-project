@@ -23,7 +23,7 @@ class SoundPlayer {
   #start_render_time = 0;
   #on_bar_change = [];
   #stop_on_next = false;
-  #worker = new Worker("/src/sound2/worker.js");
+  #worker = null;
   #shared_buffer = null;
   #view = null;
   #gain_node = null;
@@ -31,6 +31,11 @@ class SoundPlayer {
 
   constructor() {
     this.#actx = new AudioContext({ sampleRate: 44100 });
+    if (window.location.href.indexOf("github.io")==-1) {
+      this.#worker = new Worker("/src/sound2/worker.js");
+    } else {
+      this.#worker = new Worker("https://html-preview.github.io/?url=https://github.com/goomba2352/box2d-platformer-fun-project/blob/main/src/sound2.worker.js");
+    }
     
     this.#gain_node = this.#actx.createGain();
     this.#gain_node.connect(this.#actx.destination);
