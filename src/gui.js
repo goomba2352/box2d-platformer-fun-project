@@ -24,6 +24,7 @@ class GUIWindow {
 
   constructor(x = 10, y = 10, w = 320, h = 200, e) {
     pe = this;
+    this.target = e;
     let div = document.createElement("div");
     this.div = div;
     div.classList.add("window");

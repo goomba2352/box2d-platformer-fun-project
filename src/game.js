@@ -85,6 +85,9 @@ function updateGame() {
 
     if (controller.pressed(Controller.DELETE)) {
       for (let o of selected) {
+        if (pe!=null && pe.target==o) {
+          pe.destroy();
+        }
         o.destroy();
       }
       selected = [];
@@ -119,6 +122,7 @@ function updateGame() {
   context.clearRect(0, 0, window.innerWidth, window.innerHeight);
   // Draw your game objects here
   entity_manager.DrawAll(context);
+  drawgrid(context);
 
   // Debuging info
   drawDebug(context);
@@ -226,7 +230,7 @@ resizeCanvas = () => {
 };
 
 // ========================= Mouse stuff =============================
-let startDrawX, startDrawY;
+let startDrawX, startDrawY, amsx, asmy;
 let new_pl = null;
 let isDrawingPlatform = false;
 let selected = [];
@@ -237,8 +241,10 @@ let pmy = 0;
 canvas.addEventListener('mousedown', function (event) {
   if (event.button != 0) return;
   isDrawingPlatform = true;
-  startDrawX = grid(event.clientX + camera.dx(), 16);
-  startDrawY = grid(event.clientY + camera.dy(), 16);
+  asmx = event.clientX + camera.dx();
+  asmy = event.clientY + camera.dy();
+  startDrawX = grid(asmx, 16);
+  startDrawY = grid(asmy, 16);
   pmx = event.clientX + camera.dx();
   pmy = event.clientY + camera.dy()
   mouseMoved = false;
@@ -267,6 +273,8 @@ canvas.addEventListener('mousemove', function (event) {
   if (new_pl != null) {
     new_pl.destroy();
     entity_manager._cleanup_now();
+  } else if (Math.abs(mx-asmx) < 8 && Math.abs(my-asmy) < 8) {
+    return;
   }
 
   // Create a new platform
@@ -364,6 +372,33 @@ canvas.addEventListener('auxclick', function (event) { // middle click
   if (lastObject != null) {
   }
 });
+
+function drawgrid(ctx) {
+  if (!isDrawingPlatform) {
+    return;
+  }
+  const spacing = 8;
+  const width = canvas.width;
+  const height = canvas.height;
+
+  ctx.beginPath();
+  ctx.strokeStyle = '#ccc'; // Light gray color for the grid lines
+  ctx.lineWidth = 0.5; // Thin lines
+
+  // Draw vertical lines
+  for (let x = 0; x <= width; x += spacing) {
+    ctx.moveTo(x-camera.dx()%spacing, 0);
+    ctx.lineTo(x-camera.dx()%spacing, height);
+  }
+
+  // Draw horizontal lines
+  for (let y = 0; y <= height; y += spacing) {
+    ctx.moveTo(0, y-camera.dy()%spacing);
+    ctx.lineTo(width, y-camera.dy()%spacing);
+  }
+
+  ctx.stroke(); // Render the lines
+}
 
 // Start
 
