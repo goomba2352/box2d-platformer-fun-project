@@ -23,7 +23,7 @@ class SoundPlayer {
   #start_render_time = 0;
   #on_bar_change = [];
   #stop_on_next = false;
-  #worker = new Worker("sound2/worker.js");
+  #worker = new Worker("/src/sound2/worker.js");
   #shared_buffer = null;
   #view = null;
   #gain_node = null;
